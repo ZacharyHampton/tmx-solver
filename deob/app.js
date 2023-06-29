@@ -22,7 +22,7 @@ function deobfuscate(source) {
 
 
 function writeCodeToFile(code) {
-    let outputPath = "output/output.js";
+    let outputPath = "data/output/output.js";
     fs.writeFile(outputPath, code, (err) => {
         if (err) {
             console.log("Error writing file", err);
@@ -32,5 +32,5 @@ function writeCodeToFile(code) {
     });
 }
 
-const deob_code = deobfuscate(fs.readFileSync("input/input.js", "utf-8"));
+const deob_code = deobfuscate(fs.readFileSync("data/input/input.js", "utf-8"));
 writeCodeToFile(deob_code);
