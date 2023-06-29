@@ -5,10 +5,13 @@ const types = require("@babel/types");
 const fs = require("fs");
 const vm = require("vm");
 const beautify = require("js-beautify");
+const { numberToStringVisitor } = require("./transformers/numbers_to_strings");
 
 
 function deobfuscate(source) {
     const ast = parser.parse(source);
+
+    traverse(ast, numberToStringVisitor)
 
     let deobfCode = generate(ast, { comments: false }).code;
     deobfCode = beautify(deobfCode, {
