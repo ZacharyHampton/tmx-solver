@@ -1,6 +1,4 @@
 const types = require("@babel/types");
-const generate = require("@babel/generator").default;
-
 
 
 function simplify_ternary_operator(node) {

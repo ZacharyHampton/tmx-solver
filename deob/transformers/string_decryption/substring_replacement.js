@@ -17,7 +17,15 @@ String.prototype.addSlashes = function()
 }
 
 function createSandbox(ast) {
-    const lines = ast.program.body[0].expression.callee.body.body.filter((n, i) => i >= 0 && i < 5).map((n) => generate(n).code).join(`\n`);
+    let start = undefined;
+
+    if (ast.program.body[0].type === "VariableDeclaration") {
+        start = ast.program.body;
+    } else {
+        start = ast.program.body[0].expression.callee.body.body
+    }
+
+    const lines = start.filter((n, i) => i >= 0 && i < 5).map((n) => generate(n).code).join(`\n`);
     const context = {};
 
     vm.runInNewContext(lines, context);

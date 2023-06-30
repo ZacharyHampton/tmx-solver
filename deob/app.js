@@ -7,12 +7,14 @@ const vm = require("vm");
 const beautify = require("js-beautify");
 const { numberToStringVisitor } = require("./transformers/string_decryption/numbers_to_strings");
 const { replace_hex_substrings } = require("./transformers/string_decryption/substring_replacement");
+const { bracketBasedUndefinedVisitor } = require("./transformers/bracket_based_undefined")
 
 function deobfuscate(source) {
     const ast = parser.parse(source);
 
     traverse(ast, numberToStringVisitor);
     replace_hex_substrings(ast);
+    traverse(ast, bracketBasedUndefinedVisitor);
 
     let deobfCode = generate(ast, { comments: false }).code;
     deobfCode = beautify(deobfCode, {
@@ -36,5 +38,5 @@ function writeCodeToFile(code) {
     });
 }
 
-const deob_code = deobfuscate(fs.readFileSync("data/input/input.js", "utf-8"));
+const deob_code = deobfuscate(fs.readFileSync("data/input/input-init.js", "utf-8"));
 writeCodeToFile(deob_code);
