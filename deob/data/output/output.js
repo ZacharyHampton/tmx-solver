@@ -100,7 +100,6 @@
     }
     return td_v;
   };
-  var td_0P = td_0P || {};
   td_0P.td_2G = function(td_Nw) {
     var td_Fb = td_Nw.createElement("p");
     td_Nw.body.appendChild(td_Fb);
@@ -132,7 +131,6 @@
     }
   };
   window.window.tmx_profiling_started = false;
-  var td_0P = td_0P || {};
   if (typeof td_0P.td_1E === "undefined") {
     td_0P.td_1E = [];
   }
@@ -345,7 +343,6 @@
     td_0P.td_3B = "gtfwkiienlxe_dexqu9xlcrmwgbkkgtqy4ah";
     td_0P.td_5r = "https://drfdisvc.walmart.com/wIQ3UAmXnPFfSiCq?4f78921ace63a262=RPqcnBDCWuEx9nE_qDUv1172iPl4PVxKydQf2ZdGW4IiBKDSl38DJtEB-OOnp0scJgfClGeVRpmKA1CtbjLTOXtYki-KiobkLhYtqt4t4ql4kGiulybyJ1q8pWW59b56tCYOrm0LkthBOZJwg_0HprCj15g";
   });
-  var td_0P = td_0P || {};
   var td_a = 0;
   var td_m = 1;
   var td_h = 2;
@@ -1162,11 +1159,9 @@
       }
     } catch (td_N) {}
   }
-  var td_0P = td_0P || {};
   td_0P.td_0B = function() {
     return typeof navigator.vendor !== "undefined" && navigator.vendor.indexOf("Apple") !== -1;
   };
-  var td_0P = td_0P || {};
   td_0P.td_3c = function(td_ux, td_yb) {
     td_ux["src"] = td_yb;
   };
@@ -1183,7 +1178,6 @@
     }
   }
   window.tmx_post_session_params_fixed = tmx_post_session_params_fixed;
-  var td_0P = td_0P || {};
   if (typeof td_0P.td_1E === "undefined") {
     td_0P.td_1E = [];
   }

@@ -8,6 +8,8 @@ const beautify = require("js-beautify");
 const { numberToStringVisitor } = require("./transformers/string_decryption/numbers_to_strings");
 const { replace_hex_substrings } = require("./transformers/string_decryption/substring_replacement");
 const { bracketBasedUndefinedVisitor } = require("./transformers/bracket_based_undefined")
+const {fake_variable_overwrite_visitor} = require("./transformers/fake_variable_overwrite");
+
 
 function deobfuscate(source) {
     const ast = parser.parse(source);
@@ -15,6 +17,7 @@ function deobfuscate(source) {
     traverse(ast, numberToStringVisitor);
     replace_hex_substrings(ast);
     traverse(ast, bracketBasedUndefinedVisitor);
+    traverse(ast, fake_variable_overwrite_visitor)
 
     let deobfCode = generate(ast, { comments: false }).code;
     deobfCode = beautify(deobfCode, {
