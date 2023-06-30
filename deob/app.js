@@ -6,14 +6,13 @@ const fs = require("fs");
 const vm = require("vm");
 const beautify = require("js-beautify");
 const { numberToStringVisitor } = require("./transformers/string_decryption/numbers_to_strings");
-const { stringToObject } = require("./transformers/string_decryption/hex_string_decryption");
-
+const { replace_hex_substrings } = require("./transformers/string_decryption/substring_replacement");
 
 function deobfuscate(source) {
     const ast = parser.parse(source);
 
     traverse(ast, numberToStringVisitor);
-    stringToObject(ast);
+    replace_hex_substrings(ast);
 
     let deobfCode = generate(ast, { comments: false }).code;
     deobfCode = beautify(deobfCode, {
