@@ -1,3 +1,4 @@
 /.idea
 /node_modules
 /deob/data/*
+/deob/debug_suite/*
