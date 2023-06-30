@@ -5,13 +5,14 @@ const types = require("@babel/types");
 const fs = require("fs");
 const vm = require("vm");
 const beautify = require("js-beautify");
-const { numberToStringVisitor } = require("./transformers/numbers_to_strings");
-
+const { numberToStringVisitor } = require("./transformers/string_decryption/numbers_to_strings");
+const { replace_hex_substrings } = require("./transformers/string_decryption/substring_replacement");
 
 function deobfuscate(source) {
     const ast = parser.parse(source);
 
-    traverse(ast, numberToStringVisitor)
+    traverse(ast, numberToStringVisitor);
+    replace_hex_substrings(ast);
 
     let deobfCode = generate(ast, { comments: false }).code;
     deobfCode = beautify(deobfCode, {
