@@ -10,6 +10,7 @@ const { numberToStringVisitor } = require("./transformers/string_decryption/numb
 const { replace_hex_substrings } = require("./transformers/string_decryption/substring_replacement");
 const { bracketBasedUndefinedVisitor } = require("./transformers/bracket_based_undefined")
 const {fake_variable_overwrite_visitor} = require("./transformers/fake_variable_overwrite");
+const { foldConstantsVisitor } = require("./transformers/constant_folding");
 
 
 function deobfuscate(source) {
@@ -19,6 +20,8 @@ function deobfuscate(source) {
     replace_hex_substrings(ast);
     traverse(ast, bracketBasedUndefinedVisitor);
     traverse(ast, fake_variable_overwrite_visitor)
+    traverse(ast, foldConstantsVisitor);
+
 
     let deobfCode = generate(ast, { comments: false }).code;
     deobfCode = beautify(deobfCode, {
