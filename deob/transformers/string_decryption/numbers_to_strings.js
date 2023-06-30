@@ -23,8 +23,6 @@ const numberToStringVisitor = {
 
                 // replace node parent with string
                 node.parentPath.replaceWithSourceString(`"${result}"`);
-
-                console.log(`Replaced ${code} with "${result}"`);
             }
         }
     }

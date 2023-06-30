@@ -88,7 +88,6 @@ function decrypt_hex_string(ast) {
             }
 
             calls_to_replace[full_function_name] = decrypted_string;
-            console.log(`Decrypted ${full_function_name} to ${decrypted_string}`);
 
             path.parentPath.remove();
         }
@@ -119,8 +118,6 @@ function replace_hex_substrings(ast) {
 
                 const new_node = types.stringLiteral(replacement_string);
                 node.replaceWith(new_node);
-
-                console.log(`Replaced ${code} with ${replacement_string}`);
 
                 simplify_ternary_operator(node);
             }

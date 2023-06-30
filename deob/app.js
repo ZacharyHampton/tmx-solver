@@ -4,6 +4,7 @@ const traverse = require("@babel/traverse").default;
 const types = require("@babel/types");
 const fs = require("fs");
 const vm = require("vm");
+const { program } = require('commander');
 const beautify = require("js-beautify");
 const { numberToStringVisitor } = require("./transformers/string_decryption/numbers_to_strings");
 const { replace_hex_substrings } = require("./transformers/string_decryption/substring_replacement");
@@ -31,7 +32,7 @@ function deobfuscate(source) {
 
 
 function writeCodeToFile(code) {
-    let outputPath = "data/output/output.js";
+    let outputPath = `data/output/${Date.now().toString()}.js`;
     fs.writeFile(outputPath, code, (err) => {
         if (err) {
             console.log("Error writing file", err);
@@ -41,5 +42,17 @@ function writeCodeToFile(code) {
     });
 }
 
-const deob_code = deobfuscate(fs.readFileSync("data/input/input-init.js", "utf-8"));
-writeCodeToFile(deob_code);
+program
+    .version('1.0.0', '-v, --version')
+    .usage('[OPTIONS]...')
+    .argument('<file>', 'File to deobfuscate')
+    .parse(process.argv)
+    .action((file, options) => {
+        console.log('Deobfuscating file...');
+        const deob_code = deobfuscate(fs.readFileSync(file, "utf-8"));
+        console.log('Deobfuscated file.')
+
+        writeCodeToFile(deob_code);
+    });
+
+program.parse();
