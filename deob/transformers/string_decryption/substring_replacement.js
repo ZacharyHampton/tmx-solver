@@ -92,26 +92,24 @@ function replace_hex_substrings(ast) {
     const calls_to_replace = decrypt_hex_string(ast);
 
     const substringVisitor = {
-        MemberExpression(node) {
-            if (node.container.start === 0) return;
+        CallExpression(node) {
+            const callee = node.get("callee");
 
-            const full_function_name = generate(node.parentPath.node).code;
+            if (!callee) return;
 
-            if (calls_to_replace.hasOwnProperty(full_function_name)) {
-                if (generate(node.parentPath.parentPath.node).code.includes("typeof")) return;
+            const code = generate(callee.node).code;
 
-                const full_call = node.parentPath.parentPath.node;
-                const substring_numbers = full_call.arguments.map((n) => parseInt(n.value));
-                const decrypted_string = calls_to_replace[full_function_name];
+            if (calls_to_replace[code]) {
+                const arguments = node.get("arguments");
+                if (arguments.length !== 2) return;
 
-                let replacement_string = "null";
-                try {
-                    replacement_string = decrypted_string.substr(substring_numbers[0], substring_numbers[1]).addSlashes();
-                } catch (e) {}
-                // replace full_call node with string
-                node.parentPath.parentPath.replaceWithSourceString(`"${replacement_string}"`);
+                const substring_values = arguments.map((n) => n.node.value);
+                const replacement_string = calls_to_replace[code].substr(substring_values[0], substring_values[1]).addSlashes();
 
-                console.log(`Replaced ${full_function_name} with "${replacement_string}"`);
+                const new_node = types.stringLiteral(replacement_string);
+                node.replaceWith(new_node);
+
+                console.log(`Replaced ${code} with ${replacement_string}`);
             }
         }
     }
