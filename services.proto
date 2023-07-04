@@ -1,0 +1,8 @@
+message TransformationMessage {
+  required string script = 1;
+  optional string error = 2;
+}
+
+service TransformationService {
+  rpc Transform(TransformationMessage) returns (TransformationMessage);
+}

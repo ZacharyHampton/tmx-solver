@@ -15,7 +15,7 @@ import esprima
 #: https://signin.ebay.com/ws/eBayISAPI.dll?SignIn&ru=https%3A%2F%2Fwww.ebay.com%2F
 
 
-def validate_js_file(data: str):
+def validate_js_file(domain: str):
     #: run initial parser to get initial proper js portion
 
     try:
