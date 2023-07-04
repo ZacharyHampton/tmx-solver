@@ -1,2 +1,4 @@
 uvicorn[standard]
 fastapi
+requests
+esprima
