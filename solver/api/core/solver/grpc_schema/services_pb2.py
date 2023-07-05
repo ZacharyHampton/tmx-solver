@@ -13,7 +13,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0eservices.proto\"E\n\x15TransformationMessage\x12\x0e\n\x06script\x18\x01 \x01(\t\x12\x12\n\x05\x65rror\x18\x02 \x01(\tH\x00\x88\x01\x01\x42\x08\n\x06_error2T\n\x15TransformationService\x12;\n\tTransform\x12\x16.TransformationMessage\x1a\x16.TransformationMessageb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0eservices.proto\"E\n\x15TransformationMessage\x12\x0e\n\x06script\x18\x01 \x01(\t\x12\x12\n\x05\x65rror\x18\x02 \x01(\tH\x00\x88\x01\x01\x42\x08\n\x06_error\"F\n\x12\x43reateURLVMMessage\x12\x0e\n\x06script\x18\x01 \x01(\t\x12\x10\n\x08hostname\x18\x02 \x01(\t\x12\x0e\n\x06params\x18\x03 \x03(\t\"@\n\x13\x43reateURLVMResponse\x12\x0b\n\x03url\x18\x01 \x01(\t\x12\x12\n\x05\x65rror\x18\x02 \x01(\tH\x00\x88\x01\x01\x42\x08\n\x06_error2\x8e\x01\n\x15TransformationService\x12;\n\tTransform\x12\x16.TransformationMessage\x1a\x16.TransformationMessage\x12\x38\n\x0b\x43reateURLVM\x12\x13.CreateURLVMMessage\x1a\x14.CreateURLVMResponseb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -23,6 +23,10 @@ if _descriptor._USE_C_DESCRIPTORS == False:
   DESCRIPTOR._options = None
   _globals['_TRANSFORMATIONMESSAGE']._serialized_start=18
   _globals['_TRANSFORMATIONMESSAGE']._serialized_end=87
-  _globals['_TRANSFORMATIONSERVICE']._serialized_start=89
-  _globals['_TRANSFORMATIONSERVICE']._serialized_end=173
+  _globals['_CREATEURLVMMESSAGE']._serialized_start=89
+  _globals['_CREATEURLVMMESSAGE']._serialized_end=159
+  _globals['_CREATEURLVMRESPONSE']._serialized_start=161
+  _globals['_CREATEURLVMRESPONSE']._serialized_end=225
+  _globals['_TRANSFORMATIONSERVICE']._serialized_start=228
+  _globals['_TRANSFORMATIONSERVICE']._serialized_end=370
 # @@protoc_insertion_point(module_scope)

@@ -1,5 +1,7 @@
 import requests
-from ...exceptions import FailedToRetrieveScriptException
+from ...exceptions import FailedToRetrieveScriptException, FailedToValidateScriptException
+from ...grpc_schema import services_pb2_grpc, services_pb2
+import grpc
 
 
 class Site:
@@ -53,5 +55,24 @@ class Site:
         else:
             return response.text
 
+    def get_tmx_profiling_url(self, script: str, session_id: str, params: list = None) -> str:
+        if params is None:
+            params = [self.org_id, session_id]
+        else:
+            params = [self.org_id, session_id] + params
+
+        with grpc.insecure_channel('localhost:50051') as channel:
+            stub = services_pb2_grpc.TransformationServiceStub(channel)
+
+            response = stub.CreateURLVM(services_pb2.CreateURLVMMessage(
+                script=script,
+                hostname=self.tmx_hostname,
+                params=params,
+            ))
+
+            if response.error:
+                raise FailedToValidateScriptException(f'Failed to generate profiling URL for {self.site_name}')
+
+            return response.url
 
 

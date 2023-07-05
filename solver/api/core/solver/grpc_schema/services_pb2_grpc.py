@@ -19,12 +19,23 @@ class TransformationServiceStub(object):
                 request_serializer=services__pb2.TransformationMessage.SerializeToString,
                 response_deserializer=services__pb2.TransformationMessage.FromString,
                 )
+        self.CreateURLVM = channel.unary_unary(
+                '/TransformationService/CreateURLVM',
+                request_serializer=services__pb2.CreateURLVMMessage.SerializeToString,
+                response_deserializer=services__pb2.CreateURLVMResponse.FromString,
+                )
 
 
 class TransformationServiceServicer(object):
     """Missing associated documentation comment in .proto file."""
 
     def Transform(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def CreateURLVM(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -37,6 +48,11 @@ def add_TransformationServiceServicer_to_server(servicer, server):
                     servicer.Transform,
                     request_deserializer=services__pb2.TransformationMessage.FromString,
                     response_serializer=services__pb2.TransformationMessage.SerializeToString,
+            ),
+            'CreateURLVM': grpc.unary_unary_rpc_method_handler(
+                    servicer.CreateURLVM,
+                    request_deserializer=services__pb2.CreateURLVMMessage.FromString,
+                    response_serializer=services__pb2.CreateURLVMResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -62,5 +78,22 @@ class TransformationService(object):
         return grpc.experimental.unary_unary(request, target, '/TransformationService/Transform',
             services__pb2.TransformationMessage.SerializeToString,
             services__pb2.TransformationMessage.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def CreateURLVM(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/TransformationService/CreateURLVM',
+            services__pb2.CreateURLVMMessage.SerializeToString,
+            services__pb2.CreateURLVMResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
