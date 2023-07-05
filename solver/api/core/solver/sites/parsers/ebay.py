@@ -29,7 +29,7 @@ class EBay(Site):
                 'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36',
             },
             needs_parsing=True,
-            tmx_hostname='signin.ebay.com',
+            tmx_hostname='src.ebay-us.com',
             org_id='usllpic0',
         )
 
