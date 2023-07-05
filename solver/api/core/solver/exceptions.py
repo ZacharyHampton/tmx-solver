@@ -6,3 +6,8 @@ class InvalidURLException(Exception):
 class FailedToValidateScriptException(Exception):
     """Raised when the solver fails to validate the script."""
     pass
+
+
+class FailedToRetrieveScriptException(Exception):
+    """Raised when the solver fails to retrieve the script."""
+    pass

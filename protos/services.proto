@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+message TransformationMessage {
+  string script = 1;
+  optional string error = 2;
+}
+
+service TransformationService {
+  rpc Transform(TransformationMessage) returns (TransformationMessage);
+  rpc CreateURLVM(CreateURLVMMessage) returns (CreateURLVMResponse);
+}
+
+message CreateURLVMMessage {
+  string script = 1;
+  string hostname = 2;
+  map<string, string> params = 3;
+}
+
+message CreateURLVMResponse {
+  string url = 1;
+  optional string error = 2;
+}

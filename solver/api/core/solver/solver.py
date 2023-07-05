@@ -12,14 +12,6 @@ import esprima
 #: https://assets.thdstatic.com/account_lib/0.14.0/build/js/accountlib.min.js
 
 #: ebay, needs parsing, no other anti-bots
-#: https://signin.ebay.com/ws/eBayISAPI.dll?SignIn&ru=https%3A%2F%2Fwww.ebay.com%2F
-
-
-def validate_js_file(domain: str):
-    #: run initial parser to get initial proper js portion
-
-    try:
-        program = esprima.parseScript(data)
-    except Exception as e:
-        raise InvalidURLException("The script is not valid JavaScript. {}".format(e))
+#: https://signin.ebay.com/ws/eBayISAPI.dll?SignIn&ru=https%3A%2F%2Fwww.ebay.com%2F ->
+#: https://pages.ebay.com/identity/device/t_n6.html
 
