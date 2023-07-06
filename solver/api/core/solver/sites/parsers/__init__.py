@@ -33,7 +33,7 @@ class Site:
         values:
         org_id
         session_id
-        some other value (character
+        other custom values
         """
 
         self.tmx_hostname = tmx_hostname
