@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ThreatMatrix Payload Decoder</title>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.js" integrity="sha512-8Z5++K1rB3U+USaLKG6oO8uWWBhdYsM3hmdirnOEWp8h2B1aOikj5zBzlXs8QOrvY9OxEnD2QDkbSKKpfqcIWw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.3.11/jstree.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/themes/default/style.min.css" />
+
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        textarea, input[type="text"] {
+            width: 100%;
+            padding: 5px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+
+<body>
+<h1>ThreatMatrix Payload Decoder</h1>
+
+<div>
+    <label for="encrypted_string">Encrypted String & Session ID:</label>
+    <textarea id="encrypted_string" placeholder="Enter the encrypted string"></textarea>
+    <input id="session_id" type="text" placeholder="Enter the session ID">
+</div>
+
+<div style="padding-top: 20px;">
+    <label for="decrypted_string">Decrypted String:</label>
+    <textarea id="decrypted_string" placeholder="Decrypted string will appear here" readonly></textarea>
+    <div id="treeView"></div>
+</div>
+
+<script>
+    function decode(encrypted_string, session_id) {
+        try {
+            var td_D = "0123456789abcdef";
+            var td_G = "";
+            for (var td_g = 0; td_g < encrypted_string.length; td_g += 2) {
+                var td_E = (td_D.indexOf(encrypted_string.charAt(td_g)) << 4) | td_D.indexOf(encrypted_string.charAt(td_g + 1));
+                var td_T = session_id.charCodeAt(td_g / 2 % session_id.length) & 10;
+                td_G += String.fromCharCode(td_E ^ td_T);
+            }
+            var td_U_length = parseInt(td_G.split("&")[0]);
+            var td_U = td_G.substring(td_G.indexOf("&") + 1, td_U_length + td_G.indexOf("&") + 1);
+            return td_U;
+        } catch (td_d) {
+            return null;
+        }
+    }
+
+    function handleInputChange() {
+        const encrypted_string = document.getElementById("encrypted_string").value;
+        const session_id = document.getElementById("session_id").value;
+        const decrypted_string = decode(encrypted_string, session_id);
+
+        if (encrypted_string && session_id && decrypted_string) {
+            document.getElementById("decrypted_string").value = decrypted_string;
+            renderTreeView(decrypted_string);
+        }
+    }
+
+    function renderTreeView(decrypted_string) {
+        const treeData = parseDecryptedString(decrypted_string);
+        $('#treeView').jstree({
+            core: {
+                data: treeData
+            }
+        });
+    }
+
+    function parseDecryptedString(decrypted_string) {
+        const keyValuePairs = decrypted_string.split("&");
+        const treeData = [];
+
+        keyValuePairs.forEach(function (pair) {
+            const [key, value] = pair.split("=");
+            const node = {
+                text: key,
+                children: []
+            };
+
+            if (value) {
+                const subKeyValuePairs = value.split(",");
+                subKeyValuePairs.forEach(function (subPair) {
+                    const [subKey, subValue] = subPair.split("=");
+                    node.children.push({
+                        text: subKey,
+                        children: subValue ? [decodeURI(subValue)] : []
+                    });
+                });
+            }
+
+            treeData.push(node);
+        });
+
+        return treeData;
+    }
+
+    document.getElementById("encrypted_string").addEventListener("input", handleInputChange);
+    document.getElementById("session_id").addEventListener("input", handleInputChange);
+</script>
+</body>
+</html>
