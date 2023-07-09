@@ -9,6 +9,7 @@ const {fake_variable_overwrite_visitor} = require("./transformers/fake_variable_
 const { foldConstantsVisitor } = require("./transformers/constant_folding");
 const { hexStringVisitor } = require("./transformers/hex_string_unpack");
 const {functionWrapperVisitor} = require("./transformers/wrapped_function_removal");
+const {evalReplacementVisitor} = require("./transformers/eval_replacement");
 
 
 function deobfuscate(source) {
@@ -21,6 +22,7 @@ function deobfuscate(source) {
     traverse(ast, fake_variable_overwrite_visitor)
     traverse(ast, foldConstantsVisitor);
     traverse(ast, hexStringVisitor);
+    traverse(ast, evalReplacementVisitor)
 
 
     let deobfCode = generate(ast, { comments: false }).code;
