@@ -117,7 +117,7 @@ function replace_hex_substrings(ast) {
                 if (arguments.length !== 2) return;
 
                 const substring_values = arguments.map((n) => n.node.value);
-                const replacement_string = calls_to_replace[code].substr(substring_values[0], substring_values[1]).addSlashes();
+                const replacement_string = calls_to_replace[code].substr(substring_values[0], substring_values[1]);
 
                 const new_node = types.stringLiteral(replacement_string);
                 node.replaceWith(new_node);
