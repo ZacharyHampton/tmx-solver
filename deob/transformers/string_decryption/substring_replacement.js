@@ -17,15 +17,18 @@ String.prototype.addSlashes = function()
 }
 
 function createSandbox(ast) {
-    let start = undefined;
+    let start;
 
-    if (ast.program.body[0].type === "VariableDeclaration") {
+    /* if (ast.program.body[0].type === "VariableDeclaration") {
         start = ast.program.body;
     } else {
         start = ast.program.body[0].expression.callee.body.body
-    }
+    } */
 
-    const lines = start.filter((n, i) => i >= 0 && i < 5).map((n) => generate(n).code).join(`\n`);
+    start = ast.program.body;
+
+    const nodes = start.filter((n, i) => i >= 0 && i < 5)
+    const lines = nodes.map((n) => generate(n).code).join(`\n`);
     const context = {};
 
     vm.runInNewContext(lines, context);
@@ -125,6 +128,20 @@ function replace_hex_substrings(ast) {
     }
 
     traverse(ast, substringVisitor);
+
+    // remove first 4 function declarations
+
+    let count = 0;
+    const functionVisitor = {
+        ExpressionStatement(path) {
+            if (count < 4) {
+                count++;
+                path.remove();
+            }
+        }
+    }
+
+    traverse(ast, functionVisitor);
 }
 
 module.exports = {

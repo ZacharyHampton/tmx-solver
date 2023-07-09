@@ -8,11 +8,13 @@ const { bracketBasedUndefinedVisitor } = require("./transformers/bracket_based_u
 const {fake_variable_overwrite_visitor} = require("./transformers/fake_variable_overwrite");
 const { foldConstantsVisitor } = require("./transformers/constant_folding");
 const { hexStringVisitor } = require("./transformers/hex_string_unpack");
+const {functionWrapperVisitor} = require("./transformers/wrapped_function_removal");
 
 
 function deobfuscate(source) {
     const ast = parser.parse(source);
 
+    traverse(ast, functionWrapperVisitor)
     traverse(ast, numberToStringVisitor);
     replace_hex_substrings(ast);
     traverse(ast, bracketBasedUndefinedVisitor);
