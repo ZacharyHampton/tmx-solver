@@ -86,10 +86,19 @@ def get(path: str, request: Request):
         'Sec-Fetch-Mode': 'no-cors',
         'Sec-Fetch-Site': 'cross-site',
         'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36',
-        'sec-ch-ua': '"Not.A/Brand";v="8", "Chromium";v="114", "Google Chrome";v="114"',
-        'sec-ch-ua-mobile': '?0',
-        'sec-ch-ua-platform': '"macOS"',
     }
+
+    if "user-agent" in request_headers:
+        headers["User-Agent"] = request_headers["user-agent"]
+
+    if "sec-ch-ua" in request_headers:
+        headers["sec-ch-ua"] = request_headers["sec-ch-ua"]
+
+    if "sec-ch-ua-mobile" in request_headers:
+        headers["sec-ch-ua-mobile"] = request_headers["sec-ch-ua-mobile"]
+
+    if "sec-ch-ua-platform" in request_headers:
+        headers["sec-ch-ua-platform"] = request_headers["sec-ch-ua-platform"]
 
     session.headers = headers
 
