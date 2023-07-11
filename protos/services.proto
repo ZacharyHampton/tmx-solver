@@ -2,7 +2,8 @@ syntax = "proto3";
 
 message TransformationMessage {
   string script = 1;
-  optional string error = 2;
+  optional bool fast = 2;
+  optional string error = 3;
 }
 
 service TransformationService {

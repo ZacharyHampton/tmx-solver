@@ -12,20 +12,22 @@ const {functionWrapperVisitor} = require("./transformers/wrapped_function_remova
 const {evalReplacementVisitor} = require("./transformers/eval_replacement");
 const {simplifyIfAndLogicalVisitor} = require("./transformers/unreachable_code");
 
-function deobfuscate(source) {
+function deobfuscate(source, fast) {
     const ast = parser.parse(source);
 
-    traverse(ast, functionWrapperVisitor)
-    traverse(ast, numberToStringVisitor);
-    replace_hex_substrings(ast);
-    traverse(ast, bracketBasedUndefinedVisitor);
-    traverse(ast, fake_variable_overwrite_visitor)
-    traverse(ast, foldConstantsVisitor);
-    traverse(ast, hexStringVisitor);
-    traverse(ast, evalReplacementVisitor);
-    traverse(ast, simplifyIfAndLogicalVisitor);
-
-
+    if (!fast) {
+        traverse(ast, functionWrapperVisitor)
+        traverse(ast, numberToStringVisitor);
+        replace_hex_substrings(ast);
+        traverse(ast, bracketBasedUndefinedVisitor);
+        traverse(ast, fake_variable_overwrite_visitor)
+        traverse(ast, foldConstantsVisitor);
+        traverse(ast, hexStringVisitor);
+        traverse(ast, evalReplacementVisitor);
+        traverse(ast, simplifyIfAndLogicalVisitor);
+    } else {
+        replace_hex_substrings(ast, true);
+    }
 
     let deobfCode = generate(ast, { comments: false }).code;
     deobfCode = beautify(deobfCode, {

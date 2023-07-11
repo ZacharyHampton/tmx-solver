@@ -10,22 +10,16 @@ function isHex(h) {
     return /^[0-9A-F]+$/i.test(h);
 }
 
-String.prototype.addSlashes = function()
-{
-    //no need to do (str+'') anymore because 'this' can only be a string
-    return this.replace(/[\\"']/g, '\\$&').replace(/\u0000/g, '\\0');
-}
-
 function createSandbox(ast) {
     let start;
 
-    /* if (ast.program.body[0].type === "VariableDeclaration") {
+    if (ast.program.body[0].type === "VariableDeclaration") {
         start = ast.program.body;
     } else {
         start = ast.program.body[0].expression.callee.body.body
-    } */
+    }
 
-    start = ast.program.body;
+    // start = ast.program.body;
 
     const nodes = start.filter((n, i) => i >= 0 && i < 5)
     const lines = nodes.map((n) => generate(n).code).join(`\n`);
@@ -36,7 +30,7 @@ function createSandbox(ast) {
     return context;
 }
 
-function decrypt_hex_string(ast) {
+function decrypt_hex_string(ast, fast) {
     const sandbox = createSandbox(ast);
     const calls_to_replace = {};
 
@@ -92,7 +86,9 @@ function decrypt_hex_string(ast) {
 
             calls_to_replace[full_function_name] = decrypted_string;
 
-            path.parentPath.remove();
+            if (!fast) {
+                path.parentPath.remove();
+            }
         }
     }
 
@@ -101,8 +97,8 @@ function decrypt_hex_string(ast) {
     return calls_to_replace;
 }
 
-function replace_hex_substrings(ast) {
-    const calls_to_replace = decrypt_hex_string(ast);
+function replace_hex_substrings(ast, fast) {
+    const calls_to_replace = decrypt_hex_string(ast, fast);
 
     const substringVisitor = {
         CallExpression(node) {
@@ -122,7 +118,9 @@ function replace_hex_substrings(ast) {
                 const new_node = types.stringLiteral(replacement_string);
                 node.replaceWith(new_node);
 
-                simplify_ternary_operator(node);
+                if (!fast) {
+                    simplify_ternary_operator(node);
+                }
             }
         }
     }
@@ -131,17 +129,19 @@ function replace_hex_substrings(ast) {
 
     // remove first 4 function declarations
 
-    let count = 0;
-    const functionVisitor = {
-        ExpressionStatement(path) {
-            if (count < 4) {
-                count++;
-                path.remove();
+    if (!fast) {
+        let count = 0;
+        const functionVisitor = {
+            ExpressionStatement(path) {
+                if (count < 4 && path.node.start !== 0) {
+                    count++;
+                    path.remove();
+                }
             }
         }
-    }
 
-    traverse(ast, functionVisitor);
+        traverse(ast, functionVisitor);
+    }
 }
 
 module.exports = {
