@@ -1,16 +1,16 @@
 import os
-
+import config
 from fastapi import FastAPI, Request, Response
 from fastapi.staticfiles import StaticFiles
 import requests
 from services import services_pb2_grpc, services_pb2
 import grpc
-from dotenv import load_dotenv
 import tls_client
 from tls_client.cookies import create_cookie
 from fastapi.middleware.cors import CORSMiddleware
+from pymongo import MongoClient
+import certifi
 
-load_dotenv()
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
 app.add_middleware(
@@ -23,8 +23,11 @@ app.add_middleware(
 
 hostname = "src.ebay-us.com"
 replacement_domain = "localhost:8000" if os.getenv("stage") == "dev" else "tmx.zacharysproducts.com"
-
 sessions = {}
+
+mongo_client = MongoClient(config.MONGODB_URI, tlsCAFile=certifi.where())
+db = mongo_client["harvester"]
+payloads_collection = db["payloads"]
 
 """Act as a proxy server to request to hostname. Support all paths."""
 
@@ -73,7 +76,7 @@ def get(path: str, request: Request):
 
     request_headers = dict(request.headers)
 
-    url = f"https://{hostname}/{path}?{str(request.query_params)}"
+    real_tmx_url = f"https://{hostname}/{path}?{str(request.query_params)}"
 
     headers = {
         'Accept': '*/*',
@@ -102,29 +105,37 @@ def get(path: str, request: Request):
 
     session.headers = headers
 
-    response = session.get(url)
+    response = session.get(real_tmx_url)
+    thx_guid = response.cookies.get("thx_guid") or request.cookies.get("thx_guid")
 
     if len((param_values := list(request.query_params.values()))) >= 2:
         session_id = param_values[1]
-        guid = response.cookies.get("thx_guid") or request.cookies.get("thx_guid")
 
-        if all(c in "0123456789abcdef" for c in session_id) and len(session_id) == 32 and guid:  #: session id is not always 32 on other sites
-            sessions[guid] = session_id
-            print("Set {} to {}".format(guid, session_id))
+        if all(c in "0123456789abcdef" for c in session_id) and len(session_id) == 32 and thx_guid:  #: session id is not always 32 on other sites
+            sessions[thx_guid] = session_id
 
-    if request_guid := request.cookies.get('thx_guid'):
+    if thx_guid:
         session.cookies.set_cookie(create_cookie(
             name="thx_guid",
-            value=request_guid,
+            value=thx_guid,
         ))
 
         for key, value in request.query_params.items():
             if all(c in "0123456789abcdef" for c in value) and len(value) > 32:
-                session_id = sessions.get(request_guid)
+                session_id = sessions.get(thx_guid)
+
+                data_to_insert = {
+                    "url": str(request.url),
+                    "thx_guid": thx_guid,
+                    "session_id": session_id,
+                    "parameter_key": key,
+                    "raw_parameter_value": value,
+                }
+
                 if session_id:
-                    print(key, decode(value, session_id))
-                else:
-                    print("No session id to decode with.")
+                    data_to_insert["decoded_parameter_value"] = decode(value, session_id)
+
+                payloads_collection.insert_one(data_to_insert)
 
     response_headers = dict(response.headers)
     if "text/javascript" in response_headers["Content-Type"] and response.status_code == 200:
