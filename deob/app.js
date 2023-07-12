@@ -46,7 +46,7 @@ program
             const server = new grpc.Server();
 
             const packageDefinition = protoLoader.loadSync(
-                "../protos/services.proto",
+                "protos/services.proto",
                 {keepCase: true,
                     longs: String,
                     enums: String,

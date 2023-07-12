@@ -2,7 +2,6 @@ import os
 import config
 from fastapi import FastAPI, Request, Response, BackgroundTasks
 from fastapi.staticfiles import StaticFiles
-import requests
 from services import services_pb2_grpc, services_pb2
 import grpc
 import tls_client
@@ -47,7 +46,7 @@ def decode(encrypted_string, session_id):
         return None
 
 
-def deobfuscate_and_replace(response: requests.Response):
+def deobfuscate_and_replace(response):
     with grpc.insecure_channel('localhost:50051') as channel:
         stub = services_pb2_grpc.TransformationServiceStub(channel)
 
@@ -109,7 +108,14 @@ def get(path: str, request: Request, background_tasks: BackgroundTasks):
 
     session.headers = headers
 
-    response = session.get(real_tmx_url)
+    if request.cookies.get("thx_guid"):
+        cookies = {
+            "thx_guid": request.cookies.get("thx_guid"),
+        }
+    else:
+        cookies = {}
+
+    response = session.get(real_tmx_url, cookies=cookies)
     thx_guid = response.cookies.get("thx_guid") or request.cookies.get("thx_guid")
 
     if len((param_values := list(request.query_params.values()))) >= 2:

@@ -1,0 +1,9 @@
+tls_client
+fastapi
+requests
+grpcio-tools
+grpcio
+pymongo
+certifi
+gunicorn
+python-dotenv

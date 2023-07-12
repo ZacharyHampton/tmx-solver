@@ -1,0 +1,7 @@
+services:
+  harvester:
+    image: registry.digitalocean.com/tmx-registry/harvester:latest
+    container_name: harvester
+  deobfuscator:
+    image: registry.digitalocean.com/tmx-registry/deobfuscator:latest
+    container_name: deobfuscator
