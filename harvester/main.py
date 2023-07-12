@@ -1,6 +1,6 @@
 import os
 import config
-from fastapi import FastAPI, Request, Response
+from fastapi import FastAPI, Request, Response, BackgroundTasks
 from fastapi.staticfiles import StaticFiles
 import requests
 from services import services_pb2_grpc, services_pb2
@@ -67,8 +67,12 @@ def deobfuscate_and_replace(response: requests.Response):
         return script
 
 
+def upload_payload(data: dict):
+    payloads_collection.insert_one(data)
+
+
 @app.get("/{path:path}")
-def get(path: str, request: Request):
+def get(path: str, request: Request, background_tasks: BackgroundTasks):
     session = tls_client.Session(
         client_identifier="chrome112",
         random_tls_extension_order=True
@@ -135,7 +139,7 @@ def get(path: str, request: Request):
                 if session_id:
                     data_to_insert["decoded_parameter_value"] = decode(value, session_id)
 
-                payloads_collection.insert_one(data_to_insert)
+                background_tasks.add_task(upload_payload, data_to_insert)
 
     response_headers = dict(response.headers)
     if "text/javascript" in response_headers["Content-Type"] and response.status_code == 200:
