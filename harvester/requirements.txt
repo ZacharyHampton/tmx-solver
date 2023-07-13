@@ -8,3 +8,4 @@ certifi
 gunicorn
 python-dotenv
 uvicorn[standard]
+redis

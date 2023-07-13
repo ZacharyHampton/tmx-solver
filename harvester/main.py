@@ -5,10 +5,10 @@ from fastapi.staticfiles import StaticFiles
 from services import services_pb2_grpc, services_pb2
 import grpc
 import tls_client
-from tls_client.cookies import create_cookie
 from fastapi.middleware.cors import CORSMiddleware
 from pymongo import MongoClient
 import certifi
+import redis
 
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -23,11 +23,12 @@ app.add_middleware(
 hostname = "src.ebay-us.com"
 replacement_domain = "localhost:8000" if os.getenv("stage") == "dev" else "tmx.zacharysproducts.com"
 grpc_ip = "localhost" if os.getenv("stage") == "dev" else "deobfuscator"
-sessions = {}
 
 mongo_client = MongoClient(config.MONGODB_URI, tlsCAFile=certifi.where())
 db = mongo_client["harvester"]
 payloads_collection = db["payloads"]
+
+r = redis.from_url(config.REDIS_URL, decode_responses=True)
 
 """Act as a proxy server to request to hostname. Support all paths."""
 
@@ -124,12 +125,12 @@ def get(path: str, request: Request, background_tasks: BackgroundTasks):
         session_id = param_values[1]
 
         if all(c in "0123456789abcdef" for c in session_id) and thx_guid:  #: session id is not always 32 on other sites
-            sessions[thx_guid] = session_id
+            r.set(name=thx_guid, value=session_id, ex=60 * 60)
 
     elif thx_guid:
         for key, value in request.query_params.items():
             if all(c in "0123456789abcdef" for c in value):
-                session_id = sessions.get(thx_guid)
+                session_id = r.get(thx_guid)
 
                 data_to_insert = {
                     "url": str(request.url),
