@@ -9,6 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pymongo import MongoClient
 import certifi
 import redis
+from datetime import datetime
 
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -120,7 +121,7 @@ def get(path: str, request: Request, background_tasks: BackgroundTasks):
     response = session.get(real_tmx_url, cookies=cookies)
     thx_guid = response.cookies.get("thx_guid") or request.cookies.get("thx_guid")
 
-    if ".js" in path:
+    if ".js" in path:  #: this flag only works for v3, other versions use .js in all paths
         param_values = list(request.query_params.values())
         session_id = param_values[1]
 
@@ -128,22 +129,29 @@ def get(path: str, request: Request, background_tasks: BackgroundTasks):
             r.set(name=thx_guid, value=session_id, ex=60 * 60)
 
     elif thx_guid:
+        session_id = r.get(thx_guid)
+
+        data_to_insert = {
+            "url": str(request.url),
+            "thx_guid": thx_guid,
+            "session_id": session_id,
+            "parameters": {},
+            "timestamp": str(datetime.utcnow()),
+        }
+
         for key, value in request.query_params.items():
             if all(c in "0123456789abcdef" for c in value):
-                session_id = r.get(thx_guid)
-
-                data_to_insert = {
-                    "url": str(request.url),
-                    "thx_guid": thx_guid,
-                    "session_id": session_id,
-                    "parameter_key": key,
+                url_data = {
                     "raw_parameter_value": value,
                 }
 
                 if session_id:
-                    data_to_insert["decoded_parameter_value"] = decode(value, session_id)
+                    url_data["decoded_parameter_value"] = decode(value, session_id)
 
-                background_tasks.add_task(upload_payload, data_to_insert)
+                data_to_insert["parameters"][key] = url_data
+
+        if data_to_insert["parameters"]:
+            background_tasks.add_task(upload_payload, data_to_insert)
 
     response_headers = dict(response.headers)
     if "text/javascript" in response_headers["Content-Type"] and response.status_code == 200:
