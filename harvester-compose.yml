@@ -1,7 +1,20 @@
+networks:
+    tmx-network:
+      name: tmx-network
+      driver: bridge
+
 services:
   harvester:
     image: registry.digitalocean.com/tmx-registry/harvester:latest
     container_name: harvester
+    ports:
+      - "8000:8000"
+    networks:
+      - tmx-network
   deobfuscator:
     image: registry.digitalocean.com/tmx-registry/deobfuscator:latest
     container_name: deobfuscator
+    expose:
+      - "50051"
+    networks:
+      - tmx-network

@@ -7,3 +7,4 @@ pymongo
 certifi
 gunicorn
 python-dotenv
+uvicorn[standard]

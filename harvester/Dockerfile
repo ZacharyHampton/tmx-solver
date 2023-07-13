@@ -15,4 +15,4 @@ RUN python3 -m pip install --root-user-action=ignore --no-cache-dir -r requireme
 COPY . /app
 
 # Run the application
-CMD ["gunicorn", "-w", "4" ,"main:app", "--bind", "0.0.0.0"]
+CMD ["gunicorn", "-w", "4" ,"main:app", "--bind", "0.0.0.0", "--worker-class", "uvicorn.workers.UvicornWorker"]
