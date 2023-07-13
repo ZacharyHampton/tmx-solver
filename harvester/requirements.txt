@@ -9,4 +9,5 @@ gunicorn
 python-dotenv
 uvicorn[standard]
 redis
+sentry-sdk
 sentry-sdk[fastapi]
