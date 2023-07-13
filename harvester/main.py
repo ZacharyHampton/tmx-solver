@@ -119,20 +119,16 @@ def get(path: str, request: Request, background_tasks: BackgroundTasks):
     response = session.get(real_tmx_url, cookies=cookies)
     thx_guid = response.cookies.get("thx_guid") or request.cookies.get("thx_guid")
 
-    if len((param_values := list(request.query_params.values()))) >= 2:
+    if ".js" in path:
+        param_values = list(request.query_params.values())
         session_id = param_values[1]
 
-        if all(c in "0123456789abcdef" for c in session_id) and len(session_id) == 32 and thx_guid:  #: session id is not always 32 on other sites
+        if all(c in "0123456789abcdef" for c in session_id) and thx_guid:  #: session id is not always 32 on other sites
             sessions[thx_guid] = session_id
 
-    if thx_guid:
-        session.cookies.set_cookie(create_cookie(
-            name="thx_guid",
-            value=thx_guid,
-        ))
-
+    elif thx_guid:
         for key, value in request.query_params.items():
-            if all(c in "0123456789abcdef" for c in value) and len(value) > 32:
+            if all(c in "0123456789abcdef" for c in value):
                 session_id = sessions.get(thx_guid)
 
                 data_to_insert = {
