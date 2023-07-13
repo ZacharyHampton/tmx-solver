@@ -22,6 +22,7 @@ app.add_middleware(
 
 hostname = "src.ebay-us.com"
 replacement_domain = "localhost:8000" if os.getenv("stage") == "dev" else "tmx.zacharysproducts.com"
+grpc_ip = "localhost" if os.getenv("stage") == "dev" else "deobfuscator"
 sessions = {}
 
 mongo_client = MongoClient(config.MONGODB_URI, tlsCAFile=certifi.where())
@@ -47,7 +48,7 @@ def decode(encrypted_string, session_id):
 
 
 def deobfuscate_and_replace(response):
-    with grpc.insecure_channel('localhost:50051') as channel:
+    with grpc.insecure_channel('{}:50051'.format(grpc_ip)) as channel:
         stub = services_pb2_grpc.TransformationServiceStub(channel)
 
         response = stub.Transform(services_pb2.TransformationMessage(

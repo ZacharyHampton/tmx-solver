@@ -11,6 +11,8 @@ services:
       - "8000:8000"
     networks:
       - tmx-network
+    links:
+      - deobfuscator
   deobfuscator:
     image: registry.digitalocean.com/tmx-registry/deobfuscator:latest
     container_name: deobfuscator
