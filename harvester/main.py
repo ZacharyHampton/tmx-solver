@@ -10,6 +10,8 @@ from pymongo import MongoClient
 import certifi
 import redis
 from datetime import datetime
+import asyncio
+from urllib.parse import urlparse, parse_qs, parse_qsl
 
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -73,8 +75,10 @@ def upload_payload(data: dict):
     payloads_collection.insert_one(data)
 
 
-@app.get("/{path:path}")
-def get(path: str, request: Request, background_tasks: BackgroundTasks):
+def handle_requests(path: str, request: Request, background_tasks: BackgroundTasks):
+    if replacement_domain not in str(request.url):
+        return Response(status_code=404)
+
     session = tls_client.Session(
         client_identifier="chrome112",
         random_tls_extension_order=True
@@ -118,16 +122,20 @@ def get(path: str, request: Request, background_tasks: BackgroundTasks):
     else:
         cookies = {}
 
-    response = session.get(real_tmx_url, cookies=cookies)
+    if request.method == "GET":
+        response = session.get(real_tmx_url, cookies=cookies)
+    else:
+        body = asyncio.run(request.body()).decode("utf-8")
+        response = session.post(real_tmx_url, cookies=cookies, data=body)
+
     thx_guid = response.cookies.get("thx_guid") or request.cookies.get("thx_guid")
 
-    if ".js" in path:  #: this flag only works for v3, other versions use .js in all paths
+    if ".js" in path and request.method == "GET":  #: this flag only works for v3, other versions use .js in all paths
         param_values = list(request.query_params.values())
         session_id = param_values[1]
 
         if all(c in "0123456789abcdef" for c in session_id) and thx_guid:  #: session id is not always 32 on other sites
-            r.set(name=thx_guid, value=session_id, ex=60 * 60)
-
+            r.set(name=thx_guid, value=session_id, ex=86400)
     elif thx_guid:
         session_id = r.get(thx_guid)
 
@@ -139,7 +147,12 @@ def get(path: str, request: Request, background_tasks: BackgroundTasks):
             "timestamp": str(datetime.utcnow()),
         }
 
-        for key, value in request.query_params.items():
+        if request.method == "GET":
+            iterative_value = request.query_params.items()
+        else:
+            iterative_value = parse_qsl(asyncio.run(request.body()).decode("utf-8"))
+
+        for key, value in iterative_value:
             if all(c in "0123456789abcdef" for c in value):
                 url_data = {
                     "raw_parameter_value": value,
@@ -172,3 +185,13 @@ def get(path: str, request: Request, background_tasks: BackgroundTasks):
     )
 
     return response
+
+
+@app.get("/{path:path}")
+def get(path: str, request: Request, background_tasks: BackgroundTasks):
+    return handle_requests(path, request, background_tasks)
+
+
+@app.post("/{path:path}")
+def post(path: str, request: Request, background_tasks: BackgroundTasks):
+    return handle_requests(path, request, background_tasks)

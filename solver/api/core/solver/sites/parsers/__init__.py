@@ -41,6 +41,8 @@ class Site:
 
     def parse(self, data: str) -> str: ...
 
+    def solve(self, session_id: str) -> str: ...
+
     def get_config_script(self):
         if self.headers is not None:
             response = requests.get(self.config_url, headers=self.headers)
