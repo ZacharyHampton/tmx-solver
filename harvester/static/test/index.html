@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to right, #00c6ff, #0072ff);
+            height: 100vh;
+            margin: 0;
+            color: #666;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 10px 0 rgba(0, 0, 0, .1);
+            width: 400px;
+            padding: 40px;
+        }
+        .container h1 {
+            text-align: center;
+            margin: 0 0 20px;
+        }
+        .container input {
+            border: none;
+            border-bottom: 1px solid #ddd;
+            padding: 10px 0;
+            width: 100%;
+            margin-bottom: 30px;
+            transition: border .3s;
+        }
+        .container input:focus {
+            border-bottom-color: #0072ff;
+            outline: none;
+        }
+        .container button {
+            border: none;
+            background: #0072ff;
+            color: #fff;
+            padding: 10px;
+            width: 100%;
+            border-radius: 5px;
+            margin-top: 20px;
+            cursor: pointer;
+            transition: background .3s;
+        }
+        .container button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Login</h1>
+        <input type="text" placeholder="Username" required>
+        <input type="password" placeholder="Password" required>
+        <button type="submit">Login</button>
+    </div>
+</body>
+
+<script src="../load.js"></script>
+</html>

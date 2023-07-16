@@ -1,0 +1,13 @@
+tls_client
+fastapi
+requests
+grpcio-tools
+grpcio
+pymongo
+certifi
+gunicorn
+python-dotenv
+uvicorn[standard]
+redis
+sentry-sdk
+sentry-sdk[fastapi]

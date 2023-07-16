@@ -33,5 +33,8 @@ class EBay(Site):
             org_id='usllpic0',
         )
 
+        #: 280fdf771890a9f0bb8044bfffffe30c session_id example
+        #: 6 page_id example
+
     def parse(self, response: str) -> str:
         return BeautifulSoup(response, 'html.parser').find('script').string

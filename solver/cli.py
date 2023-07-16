@@ -14,12 +14,6 @@ def main():
 
     site = site_list[args.domain]
 
-    script = site.get_config_script()
-
-    #: static for now, will be dynamic in the future
-    #: for ebay
-    profiling_url = site.get_tmx_profiling_url(script, '280fdf771890a9f0bb8044bfffffe30c', ["6"])
-
 
 if __name__ == '__main__':
     main()

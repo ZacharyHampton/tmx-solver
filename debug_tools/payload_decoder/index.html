@@ -3,12 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>ThreatMatrix Payload Decoder</title>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.js" integrity="sha512-8Z5++K1rB3U+USaLKG6oO8uWWBhdYsM3hmdirnOEWp8h2B1aOikj5zBzlXs8QOrvY9OxEnD2QDkbSKKpfqcIWw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.3.11/jstree.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/themes/default/style.min.css" />
-
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -29,6 +24,12 @@
             padding: 5px;
             margin-bottom: 10px;
         }
+
+        pre {
+            background-color: #f7f7f7;
+            padding: 10px;
+            overflow: auto;
+        }
     </style>
 </head>
 
@@ -36,15 +37,16 @@
 <h1>ThreatMatrix Payload Decoder</h1>
 
 <div>
-    <label for="encrypted_string">Encrypted String & Session ID:</label>
+    <label for="encrypted_string">Encrypted String:</label>
     <textarea id="encrypted_string" placeholder="Enter the encrypted string"></textarea>
+
+    <label for="session_id">Session ID:</label>
     <input id="session_id" type="text" placeholder="Enter the session ID">
 </div>
 
-<div style="padding-top: 20px;">
-    <label for="decrypted_string">Decrypted String:</label>
-    <textarea id="decrypted_string" placeholder="Decrypted string will appear here" readonly></textarea>
-    <div id="treeView"></div>
+<div style="margin-top: 10px">
+    <label for="decrypted_string">Decrypted JSON:</label>
+    <pre id="decrypted_json"></pre>
 </div>
 
 <script>
@@ -68,49 +70,40 @@
     function handleInputChange() {
         const encrypted_string = document.getElementById("encrypted_string").value;
         const session_id = document.getElementById("session_id").value;
-        const decrypted_string = decode(encrypted_string, session_id);
 
-        if (encrypted_string && session_id && decrypted_string) {
-            document.getElementById("decrypted_string").value = decrypted_string;
-            renderTreeView(decrypted_string);
+        if (encrypted_string && session_id) {
+            const decrypted_string = decode(encrypted_string, session_id);
+            document.getElementById("decrypted_json").textContent = JSON.stringify(parseDecryptedString(decrypted_string), null, 2);
+        } else {
+            document.getElementById("decrypted_json").textContent = "";
         }
-    }
-
-    function renderTreeView(decrypted_string) {
-        const treeData = parseDecryptedString(decrypted_string);
-        $('#treeView').jstree({
-            core: {
-                data: treeData
-            }
-        });
     }
 
     function parseDecryptedString(decrypted_string) {
         const keyValuePairs = decrypted_string.split("&");
-        const treeData = [];
+        const json = {};
 
         keyValuePairs.forEach(function (pair) {
             const [key, value] = pair.split("=");
-            const node = {
-                text: key,
-                children: []
-            };
+
+            if (key === "" || value === "") return;
 
             if (value) {
-                const subKeyValuePairs = value.split(",");
-                subKeyValuePairs.forEach(function (subPair) {
-                    const [subKey, subValue] = subPair.split("=");
-                    node.children.push({
-                        text: subKey,
-                        children: subValue ? [decodeURI(subValue)] : []
-                    });
-                });
+                try {
+                    json[key] = JSON.parse(decodeURIComponent(value));
+                } catch {
+                    try {
+                        json[key] = decodeURIComponent(value);
+                    } catch {
+                        json[key] = value;
+                    }
+                }
+            } else {
+                json[key] = "";
             }
-
-            treeData.push(node);
         });
 
-        return treeData;
+        return json;
     }
 
     document.getElementById("encrypted_string").addEventListener("input", handleInputChange);

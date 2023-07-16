@@ -8,18 +8,29 @@ const { bracketBasedUndefinedVisitor } = require("./transformers/bracket_based_u
 const {fake_variable_overwrite_visitor} = require("./transformers/fake_variable_overwrite");
 const { foldConstantsVisitor } = require("./transformers/constant_folding");
 const { hexStringVisitor } = require("./transformers/hex_string_unpack");
+const {functionWrapperVisitor} = require("./transformers/wrapped_function_removal");
+const {evalReplacementVisitor} = require("./transformers/eval_replacement");
+const {simplifyIfAndLogicalVisitor} = require("./transformers/unreachable_code");
 const { proxyVisitor } = require("./transformers/proxy_functions.js")
 
-function deobfuscate(source) {
+
+function deobfuscate(source, fast) {
     const ast = parser.parse(source);
 
-    traverse(ast, numberToStringVisitor);
-    replace_hex_substrings(ast);
-    traverse(ast, bracketBasedUndefinedVisitor);
-    traverse(ast, fake_variable_overwrite_visitor)
-    traverse(ast, foldConstantsVisitor);
-    traverse(ast, hexStringVisitor);
-    traverse(ast, proxyVisitor)
+    if (!fast) {
+        traverse(ast, functionWrapperVisitor)
+        traverse(ast, numberToStringVisitor);
+        replace_hex_substrings(ast);
+        traverse(ast, bracketBasedUndefinedVisitor);
+        traverse(ast, fake_variable_overwrite_visitor)
+        traverse(ast, foldConstantsVisitor);
+        traverse(ast, hexStringVisitor);
+        traverse(ast, evalReplacementVisitor);
+        traverse(ast, simplifyIfAndLogicalVisitor);
+        traverse(ast, proxyVisitor);
+    } else {
+        replace_hex_substrings(ast, true);
+    }
 
     let deobfCode = generate(ast, { comments: false }).code;
     deobfCode = beautify(deobfCode, {
