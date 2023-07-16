@@ -8,7 +8,7 @@ const { bracketBasedUndefinedVisitor } = require("./transformers/bracket_based_u
 const {fake_variable_overwrite_visitor} = require("./transformers/fake_variable_overwrite");
 const { foldConstantsVisitor } = require("./transformers/constant_folding");
 const { hexStringVisitor } = require("./transformers/hex_string_unpack");
-
+const { proxyVisitor } = require("./transformers/proxy_functions.js")
 
 function deobfuscate(source) {
     const ast = parser.parse(source);
@@ -19,7 +19,7 @@ function deobfuscate(source) {
     traverse(ast, fake_variable_overwrite_visitor)
     traverse(ast, foldConstantsVisitor);
     traverse(ast, hexStringVisitor);
-
+    traverse(ast, proxyVisitor)
 
     let deobfCode = generate(ast, { comments: false }).code;
     deobfCode = beautify(deobfCode, {

@@ -7,8 +7,6 @@ const { grpc_deobfuscate } = require('./js_solving/grpc_deobfuscate');
 const { create_profiling_url } = require('./js_solving/create_profiling_url');
 
 
-
-
 function writeCodeToFile(code) {
     let outputPath = `data/output/${Date.now().toString()}.js`;
     fs.writeFile(outputPath, code, (err) => {
@@ -34,7 +32,7 @@ program
                     if (err) {
                         console.log("Error reading file", err);
                     } else {
-                        console.log('Deobfuscating...')
+                        console. log('Deobfuscating...')
                         let deobfCode = deobfuscate(data);
                         writeCodeToFile(deobfCode);
                     }
