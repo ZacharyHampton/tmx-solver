@@ -41,7 +41,18 @@ class Site:
 
     def parse(self, data: str) -> str: ...
 
-    def solve(self, session_id: str) -> str: ...
+    def solve(self, session_id: str) -> bool:
+        script = self.get_config_script()
+
+        profiling_url = self.get_tmx_profiling_url(script, session_id)
+
+        response = requests.get(profiling_url, headers=self.headers)
+
+        return True
+
+    def test_solve(self) -> bool: ...
+
+    def generate_test_session_id(self) -> str: ...
 
     def get_config_script(self):
         if self.headers is not None:

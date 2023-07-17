@@ -14,6 +14,10 @@ def main():
 
     site = site_list[args.domain]
 
+    print(f'Testing {site.site_name.lower()} solver...')
+    assert site.test_solve()
+    print('Test passed.')
+
 
 if __name__ == '__main__':
     main()

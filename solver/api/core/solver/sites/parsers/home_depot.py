@@ -1,7 +1,14 @@
 from . import Site
 import esprima
+import uuid
+import seleniumwire.undetected_chromedriver as uc
+from selenium.webdriver.common.by import By
+import json
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
-class EBay(Site):
+
+class HomeDepot(Site):
     def __init__(self):
         super().__init__(
             site_name="Home Depot",
@@ -30,5 +37,47 @@ class EBay(Site):
 
     def parse(self, response: str) -> str:
         ast = esprima.parseScript(response)
+        print('a')
 
+    def generate_test_session_id(self) -> str:
+        return str(uuid.uuid4())
+
+    def test_solve(self) -> bool:
+        session_id = self.generate_test_session_id()
+
+        solve_success = self.solve(session_id)
+        if not solve_success:
+            return False
+
+        driver = uc.Chrome(headless=True, use_subprocess=False)
+
+        def interceptor(request):
+            if (
+                'customer/auth/v1/twostep/init' in request.path and
+                request.method == 'POST'
+            ):
+                body = json.loads(request.body.decode('utf-8'))
+                body['session_id'] = session_id
+                request.body = json.dumps(body).encode('utf-8')
+
+                del request.headers['Content-Length']
+                request.headers['Content-Length'] = str(len(request.body))
+
+        driver.request_interceptor = interceptor
+
+        driver.get('https://www.homedepot.com/auth/view/signin?redirect=/&ref=null')
+
+        #: wait for element to load
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.CLASS_NAME, 'bttn__content'))
+        )
+
+        email_field = driver.find_element(value='username')
+        email_field.send_keys('a@gmail.com')
+
+        login_button = driver.find_elements(by=By.CLASS_NAME, value='bttn__content')[0]
+        login_button.click()
+
+        request = driver.wait_for_request('/customer/auth/v1/twostep/init', timeout=10)
+        return '"tmx":false' in request.response.body.decode('utf-8')
 

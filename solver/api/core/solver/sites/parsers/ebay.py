@@ -1,5 +1,6 @@
 from . import Site
 from bs4 import BeautifulSoup
+import uuid
 
 
 class EBay(Site):
@@ -38,3 +39,6 @@ class EBay(Site):
 
     def parse(self, response: str) -> str:
         return BeautifulSoup(response, 'html.parser').find('script').string
+
+    def generate_test_session_id(self) -> str:
+        return uuid.uuid4().hex
