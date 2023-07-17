@@ -11,6 +11,8 @@ const { hexStringVisitor } = require("./transformers/hex_string_unpack");
 const {functionWrapperVisitor} = require("./transformers/wrapped_function_removal");
 const {evalReplacementVisitor} = require("./transformers/eval_replacement");
 const {simplifyIfAndLogicalVisitor} = require("./transformers/unreachable_code");
+const { proxyVisitor } = require("./transformers/proxy_functions.js")
+
 
 function deobfuscate(source, fast) {
     const ast = parser.parse(source);
@@ -25,6 +27,7 @@ function deobfuscate(source, fast) {
         traverse(ast, hexStringVisitor);
         traverse(ast, evalReplacementVisitor);
         traverse(ast, simplifyIfAndLogicalVisitor);
+        traverse(ast, proxyVisitor);
     } else {
         replace_hex_substrings(ast, true);
     }
