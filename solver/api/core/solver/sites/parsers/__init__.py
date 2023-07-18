@@ -1,6 +1,7 @@
 import requests
 from ...exceptions import FailedToRetrieveScriptException, FailedToValidateScriptException
 from ...grpc_schema import services_pb2_grpc, services_pb2
+from ...profiling import Profiling
 import grpc
 
 
@@ -55,6 +56,8 @@ class Site:
           "jsb": "Chrome 114"
         }
 
+        profiling = Profiling(self.reveal_strings(response.text))
+
         return True
 
     def test_solve(self) -> bool: ...
@@ -94,5 +97,19 @@ class Site:
                 raise FailedToValidateScriptException(f'Failed to generate profiling URL for {self.site_name}')
 
             return response.url
+
+    def reveal_strings(self, script: str) -> str:
+        with grpc.insecure_channel('localhost:50051') as channel:
+            stub = services_pb2_grpc.TransformationServiceStub(channel)
+
+            response = stub.Transform(services_pb2.TransformationMessage(
+                script=script,
+                fast=True,
+            ))
+
+            if response.error:
+                raise FailedToValidateScriptException(f'Failed to reveal strings for {self.site_name}')
+
+            return response.script
 
 

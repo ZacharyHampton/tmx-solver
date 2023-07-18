@@ -6,11 +6,6 @@ message TransformationMessage {
   optional string error = 3;
 }
 
-service TransformationService {
-  rpc Transform(TransformationMessage) returns (TransformationMessage);
-  rpc CreateURLVM(CreateURLVMMessage) returns (CreateURLVMResponse);
-}
-
 message CreateURLVMMessage {
   string script = 1;
   string hostname = 2;
@@ -20,4 +15,21 @@ message CreateURLVMMessage {
 message CreateURLVMResponse {
   string url = 1;
   optional string error = 2;
+}
+
+service TransformationService {
+  rpc Transform(TransformationMessage) returns (TransformationMessage);
+  rpc CreateURLVM(CreateURLVMMessage) returns (CreateURLVMResponse);
+}
+
+message LinkURLsMessage {
+  string script = 1;
+}
+
+message LinkURLsResponse {
+  map<string, string> urls = 1;
+}
+
+service LinkingService {
+  rpc LinkURLs(LinkURLsMessage) returns (LinkURLsResponse);
 }
