@@ -83,5 +83,5 @@ class HomeDepot(Site):
         login_button.click()
 
         request = driver.wait_for_request('/customer/auth/v1/twostep/init', timeout=10)
-        return '"tmx":false' in request.response.body.decode('utf-8')
+        return '"tmx":false' in request.response.body.decode('utf-8') and request.response.status_code == 200
 

@@ -1,9 +1,17 @@
 from google.protobuf.internal import containers as _containers
+from google.protobuf.internal import enum_type_wrapper as _enum_type_wrapper
 from google.protobuf import descriptor as _descriptor
 from google.protobuf import message as _message
-from typing import ClassVar as _ClassVar, Iterable as _Iterable, Optional as _Optional
+from typing import ClassVar as _ClassVar, Iterable as _Iterable, Mapping as _Mapping, Optional as _Optional, Union as _Union
 
 DESCRIPTOR: _descriptor.FileDescriptor
+
+class ScriptType(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
+    __slots__ = []
+    PROFILING: _ClassVar[ScriptType]
+    MAIN: _ClassVar[ScriptType]
+PROFILING: ScriptType
+MAIN: ScriptType
 
 class TransformationMessage(_message.Message):
     __slots__ = ["script", "fast", "error"]
@@ -32,3 +40,28 @@ class CreateURLVMResponse(_message.Message):
     url: str
     error: str
     def __init__(self, url: _Optional[str] = ..., error: _Optional[str] = ...) -> None: ...
+
+class LinkURLsMessage(_message.Message):
+    __slots__ = ["script", "script_type"]
+    SCRIPT_FIELD_NUMBER: _ClassVar[int]
+    SCRIPT_TYPE_FIELD_NUMBER: _ClassVar[int]
+    script: str
+    script_type: ScriptType
+    def __init__(self, script: _Optional[str] = ..., script_type: _Optional[_Union[ScriptType, str]] = ...) -> None: ...
+
+class LinkURLsResponse(_message.Message):
+    __slots__ = ["urls", "script_type", "error"]
+    class UrlsEntry(_message.Message):
+        __slots__ = ["key", "value"]
+        KEY_FIELD_NUMBER: _ClassVar[int]
+        VALUE_FIELD_NUMBER: _ClassVar[int]
+        key: str
+        value: str
+        def __init__(self, key: _Optional[str] = ..., value: _Optional[str] = ...) -> None: ...
+    URLS_FIELD_NUMBER: _ClassVar[int]
+    SCRIPT_TYPE_FIELD_NUMBER: _ClassVar[int]
+    ERROR_FIELD_NUMBER: _ClassVar[int]
+    urls: _containers.ScalarMap[str, str]
+    script_type: ScriptType
+    error: str
+    def __init__(self, urls: _Optional[_Mapping[str, str]] = ..., script_type: _Optional[_Union[ScriptType, str]] = ..., error: _Optional[str] = ...) -> None: ...

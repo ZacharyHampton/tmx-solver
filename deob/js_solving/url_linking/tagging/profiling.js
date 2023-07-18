@@ -28,6 +28,7 @@ function check_for_tmx_tags_iframe(ideal_part) {
 }
 
 function check_for_fcjs(ideal_part) {
+    // this url can be used for 2 things, mostly always for sending the profiling info however
     try {  // fcjs
         if (
             ideal_part.parent.type === "BlockStatement" &&

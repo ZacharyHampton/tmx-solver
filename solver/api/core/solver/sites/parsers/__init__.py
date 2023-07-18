@@ -2,6 +2,7 @@ import requests
 from ...exceptions import FailedToRetrieveScriptException, FailedToValidateScriptException
 from ...grpc_schema import services_pb2_grpc, services_pb2
 from ...profiling import Profiling
+from ...device import Device
 import grpc
 
 
@@ -49,14 +50,14 @@ class Site:
 
         response = requests.get(profiling_url, headers=self.headers)
 
-        initial_payload = {
+        profiling = Profiling(self.reveal_strings(response.text), Device({
           "jsou": "Mac",
           "jso": "Mac OS X 10_15_7",
           "jsbu": "Chrome",
           "jsb": "Chrome 114"
-        }
+        }), session_id)
 
-        profiling = Profiling(self.reveal_strings(response.text))
+        profiling.solve()
 
         return True
 
