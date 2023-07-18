@@ -5,7 +5,7 @@ const protoLoader = require('@grpc/proto-loader');
 const { deobfuscate } = require('./deobfuscate');
 const { grpc_deobfuscate } = require('./js_solving/grpc_deobfuscate');
 const { create_profiling_url } = require('./js_solving/create_profiling_url');
-const { link_urls } = require('./js_solving/link_urls');
+const { link_urls } = require('./js_solving/url_linking/link_urls');
 
 
 function writeCodeToFile(code) {

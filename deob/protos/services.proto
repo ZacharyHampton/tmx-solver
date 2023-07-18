@@ -22,13 +22,20 @@ service TransformationService {
   rpc CreateURLVM(CreateURLVMMessage) returns (CreateURLVMResponse);
 }
 
+enum ScriptType {
+    PROFILING = 0;
+    MAIN = 1;
+  }
+
 message LinkURLsMessage {
   string script = 1;
+  ScriptType script_type = 2;
 }
 
 message LinkURLsResponse {
   map<string, string> urls = 1;
-  optional string error = 2;
+  ScriptType script_type = 2;
+  optional string error = 3;
 }
 
 service LinkingService {
