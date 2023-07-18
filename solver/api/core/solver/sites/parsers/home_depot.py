@@ -53,7 +53,10 @@ class HomeDepot(Site):
         if not solve_success:
             return False
 
-        driver = uc.Chrome(headless=True, use_subprocess=False)
+        chrome_options = uc.ChromeOptions()
+        chrome_options.add_argument("--auto-open-devtools-for-tabs")
+
+        driver = uc.Chrome(headless=True, use_subprocess=False, options=chrome_options)
 
         def interceptor(request):
             if (
