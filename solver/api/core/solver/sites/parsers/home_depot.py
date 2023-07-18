@@ -36,8 +36,12 @@ class HomeDepot(Site):
         )
 
     def parse(self, response: str) -> str:
-        ast = esprima.parseScript(response)
-        print('a')
+        ast = esprima.tokenize(response)
+
+        for node in ast:
+            if node.type == "String":
+                if "var threatmetrix=threatmetrix" in node.value:
+                    return node.value[1:-1]
 
     def generate_test_session_id(self) -> str:
         return str(uuid.uuid4())

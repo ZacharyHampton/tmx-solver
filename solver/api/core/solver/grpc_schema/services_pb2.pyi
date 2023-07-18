@@ -6,12 +6,14 @@ from typing import ClassVar as _ClassVar, Iterable as _Iterable, Optional as _Op
 DESCRIPTOR: _descriptor.FileDescriptor
 
 class TransformationMessage(_message.Message):
-    __slots__ = ["script", "error"]
+    __slots__ = ["script", "fast", "error"]
     SCRIPT_FIELD_NUMBER: _ClassVar[int]
+    FAST_FIELD_NUMBER: _ClassVar[int]
     ERROR_FIELD_NUMBER: _ClassVar[int]
     script: str
+    fast: bool
     error: str
-    def __init__(self, script: _Optional[str] = ..., error: _Optional[str] = ...) -> None: ...
+    def __init__(self, script: _Optional[str] = ..., fast: bool = ..., error: _Optional[str] = ...) -> None: ...
 
 class CreateURLVMMessage(_message.Message):
     __slots__ = ["script", "hostname", "params"]

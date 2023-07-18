@@ -48,6 +48,13 @@ class Site:
 
         response = requests.get(profiling_url, headers=self.headers)
 
+        initial_payload = {
+          "jsou": "Mac",
+          "jso": "Mac OS X 10_15_7",
+          "jsbu": "Chrome",
+          "jsb": "Chrome 114"
+        }
+
         return True
 
     def test_solve(self) -> bool: ...
