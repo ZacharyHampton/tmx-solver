@@ -6,7 +6,7 @@ function check_for_embedded_image(ideal_part) {
         const code = generate(previous_sibling.node).code;
 
         if (code.includes('createElement("img");')) {
-            return "embedded_image"
+            return "embedded_image_img"
         }
     } catch {}
 }
@@ -34,7 +34,7 @@ function check_for_fcjs(ideal_part) {
             ideal_part.parentPath.parent.type === "IfStatement" &&
             generate(ideal_part.parentPath.parent.test).code.includes("tmx_tags_iframe_marker")
         ) {
-            return "fcjs"
+            return "profiling_url"
         }
     } catch {}
 }
@@ -43,7 +43,7 @@ function check_for_p_tag(ideal_part) {
     const ideal_code = generate(ideal_part.node).code;
 
     if (ideal_code.includes('"url(" +')) {
-        return "p_tag"
+        return "embedded_image_p"
     }
 }
 
