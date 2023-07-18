@@ -28,6 +28,7 @@ message LinkURLsMessage {
 
 message LinkURLsResponse {
   map<string, string> urls = 1;
+  optional string error = 2;
 }
 
 service LinkingService {

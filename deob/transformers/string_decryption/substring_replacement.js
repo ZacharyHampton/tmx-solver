@@ -118,9 +118,10 @@ function replace_hex_substrings(ast, fast) {
                 const new_node = types.stringLiteral(replacement_string);
                 node.replaceWith(new_node);
 
-                if (!fast) {
+                /*if (!fast) {
                     simplify_ternary_operator(node);
-                }
+                }*/
+                simplify_ternary_operator(node);
             }
         }
     }

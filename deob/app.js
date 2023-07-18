@@ -5,6 +5,7 @@ const protoLoader = require('@grpc/proto-loader');
 const { deobfuscate } = require('./deobfuscate');
 const { grpc_deobfuscate } = require('./js_solving/grpc_deobfuscate');
 const { create_profiling_url } = require('./js_solving/create_profiling_url');
+const { link_urls } = require('./js_solving/link_urls');
 
 
 function writeCodeToFile(code) {
@@ -56,7 +57,13 @@ program
 
             server.addService(transformation_service.service, {
                 Transform: grpc_deobfuscate,
-                CreateURLVM: create_profiling_url
+                CreateURLVM: create_profiling_url,
+            });
+
+            const linking_service = protoDescriptor.LinkingService
+
+            server.addService(linking_service.service, {
+                LinkURLs: link_urls
             });
 
             server.bindAsync('0.0.0.0:50051', grpc.ServerCredentials.createInsecure(), () => {

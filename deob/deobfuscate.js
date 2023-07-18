@@ -27,9 +27,11 @@ function deobfuscate(source, fast) {
         traverse(ast, hexStringVisitor);
         traverse(ast, evalReplacementVisitor);
         traverse(ast, simplifyIfAndLogicalVisitor);
-        traverse(ast, proxyVisitor);
+        //traverse(ast, proxyVisitor);
     } else {
+        traverse(ast, functionWrapperVisitor)
         replace_hex_substrings(ast, true);
+        traverse(ast, fake_variable_overwrite_visitor);
     }
 
     let deobfCode = generate(ast, { comments: false }).code;
