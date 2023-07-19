@@ -10,11 +10,12 @@ from .encrypt import encrypt
 
 
 class Profiling:
-    def __init__(self, script: str, device: Device, session_id: str, headers: dict = None):
+    def __init__(self, script: str, device: Device, session_id: str, headers: dict = None, proxy: str = None):
         self.script = script
         self.device = device
         self.headers = headers
         self.session_id = session_id
+        self.proxy = proxy
 
         if self.headers is None:
             self.headers = {
@@ -83,14 +84,14 @@ class Profiling:
     async def _request_to_images(self):
         urls = [self.tags["embedded_image_img"], self.tags["embedded_image_p"]]
 
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(proxies=self.proxy) as client:
             await asyncio.gather(*[client.get(url) for url in urls])
 
     async def _submit_profiling_data(self) -> str:
         query = self.json_to_query_string(self._get_required_device_data())
         encrypted_query = encrypt(query, self.session_id)
 
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(proxies=self.proxy) as client:
             response = await client.get(
                 self.tags["profiling_url"] + '&jb={}'.format(encrypted_query),
                 headers=self.headers,

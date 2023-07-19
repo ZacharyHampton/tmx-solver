@@ -49,9 +49,7 @@ class HomeDepot(Site):
     def generate_test_session_id(self) -> str:
         return str(uuid.uuid4())
 
-    def test_solve(self) -> bool:
-        session_id = self.generate_test_session_id()
-
+    def test_solve(self, session_id: str, proxy: str = None) -> bool:
         working_device = Device({
           "jsou": "Mac",
           "jso": "Mac OS X 10_15_7",
@@ -63,11 +61,15 @@ class HomeDepot(Site):
         if random_device is None:
             return False"""
 
-        solve_success = self.solve(session_id, working_device)
+        solve_success = self.solve(session_id, working_device, proxy=proxy)
 
         if not solve_success:
             return False
 
+        return self.validate_session_id(session_id)
+
+    @staticmethod
+    def validate_session_id(session_id: str) -> bool:
         chrome_options = uc.ChromeOptions()
         chrome_options.add_argument("--auto-open-devtools-for-tabs")
 
@@ -75,11 +77,11 @@ class HomeDepot(Site):
 
         def interceptor(request):
             if (
-                'customer/auth/v1/twostep/init' in request.path and
-                request.method == 'POST'
+                    'customer/auth/v1/twostep/init' in request.path and
+                    request.method == 'POST'
             ):
                 body = json.loads(request.body.decode('utf-8'))
-                body['session_id'] = session_id
+                body['sessionID'] = session_id
                 request.body = json.dumps(body).encode('utf-8')
 
                 del request.headers['Content-Length']
@@ -102,4 +104,5 @@ class HomeDepot(Site):
 
         request = driver.wait_for_request('/customer/auth/v1/twostep/init', timeout=10)
         return '"tmx":false' in request.response.body.decode('utf-8') and request.response.status_code == 200
+
 

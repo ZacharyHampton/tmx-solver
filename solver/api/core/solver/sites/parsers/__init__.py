@@ -44,20 +44,29 @@ class Site:
 
     def parse(self, data: str) -> str: ...
 
-    def solve(self, session_id: str, device: Device) -> bool:
+    def solve(self, session_id: str, device: Device, proxy: str = None) -> bool:
         script = self.get_config_script()
 
         profiling_url = self.get_tmx_profiling_url(script, session_id)
 
-        response = requests.get(profiling_url, headers=self.headers)
+        if proxy is not None:
+            proxy = 'http://' + proxy
 
-        profiling = Profiling(self.reveal_strings(response.text), device, session_id)
+        response = requests.get(profiling_url, headers=self.headers, proxies={
+            'https': proxy,
+            'http': proxy
+        } if proxy is not None else None)
+
+        profiling = Profiling(self.reveal_strings(response.text), device, session_id, proxy=proxy)
 
         profiling.solve()
 
         return True
 
-    def test_solve(self) -> bool: ...
+    def test_solve(self, session_id: str, proxy: str = None) -> bool: ...
+
+    @staticmethod
+    def validate_session_id(session_id: str) -> bool: ...
 
     def generate_test_session_id(self) -> str: ...
 

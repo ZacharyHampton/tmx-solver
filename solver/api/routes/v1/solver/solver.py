@@ -18,6 +18,7 @@ devices = get_devices()
 class SolveRequest(BaseModel):
     session_id: str
     domain: Site
+    proxy: str | None = None
 
 
 class SolveResponse(BaseModel):
@@ -27,7 +28,7 @@ class SolveResponse(BaseModel):
 
 
 @router.post("/solve", response_model=SolveResponse)
-def solve(solve_request: SolveRequest, mongo_client: MongoClient = Depends(get_client)):
+def solve(solve_request: SolveRequest):
     site = site_list[solve_request.domain.value]
 
     #: log time to execute
@@ -46,7 +47,7 @@ def solve(solve_request: SolveRequest, mongo_client: MongoClient = Depends(get_c
     message = None
     execution_time = None
     try:
-        success = site.solve(solve_request.session_id, working_device)
+        success = site.solve(solve_request.session_id, working_device, proxy=solve_request.proxy)
         execution_time = round(time.time() - start_time, 2)
     except Exception as e:
         success = False
