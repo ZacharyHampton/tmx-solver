@@ -32,8 +32,12 @@ message LinkURLsMessage {
   ScriptType script_type = 2;
 }
 
+message ListOfURLs {
+  repeated string urls = 1;
+}
+
 message LinkURLsResponse {
-  map<string, string> urls = 1;
+  map<string, ListOfURLs> urls = 1;
   ScriptType script_type = 2;
   optional string error = 3;
 }

@@ -2,6 +2,7 @@ import requests
 from ...exceptions import FailedToRetrieveScriptException, FailedToValidateScriptException
 from ...grpc_schema import services_pb2_grpc, services_pb2
 from ...profiling import Profiling
+from ...main_script import MainScript
 from ...device import Device
 from ....config import GRPC_HOSTNAME
 import grpc
@@ -58,8 +59,10 @@ class Site:
         } if proxy is not None else None)
 
         profiling = Profiling(self.reveal_strings(response.text), device, session_id, proxy=proxy)
+        main_script_src = profiling.solve()
 
-        profiling.solve()
+        main = MainScript(self.reveal_strings(main_script_src), device, session_id, proxy=proxy)
+        main.solve()
 
         return True
 

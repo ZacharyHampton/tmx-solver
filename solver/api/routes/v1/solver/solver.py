@@ -35,19 +35,19 @@ def solve(solve_request: SolveRequest):
 
     start_time = time.time()
 
-    working_device = Device({
+    """working_device = Device({
           "jsou": "Mac",
           "jso": "Mac OS X 10_15_7",
           "jsbu": "Chrome",
           "jsb": "Chrome 114"
-        })
+        })"""
 
-    #: random_device = random.choice(devices)
+    random_device = random.choice(devices)
 
     message = None
     execution_time = None
     try:
-        success = site.solve(solve_request.session_id, working_device, proxy=solve_request.proxy)
+        success = site.solve(solve_request.session_id, random_device, proxy=solve_request.proxy)
         execution_time = round(time.time() - start_time, 2)
     except Exception as e:
         success = False

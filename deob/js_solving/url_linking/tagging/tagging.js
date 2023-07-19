@@ -1,12 +1,19 @@
 const {default: generate} = require("@babel/generator");
 const { profiling_tagging } = require("./profiling");
+const { main_tagging } = require("./main");
 
 const tagging_function = {
-    "PROFILING": profiling_tagging
+    "PROFILING": profiling_tagging,
+    "MAIN": main_tagging
 }
 
 function recursive_til_parent_body(path) {
-    if (path.type === "ExpressionStatement") {
+    const code = generate(path.node).code;  // for debug
+    // VariableDeclaration
+    if (
+        path.type === "ExpressionStatement" ||
+        (path.type === "VariableDeclaration" && path.parent.type === "BlockStatement")
+    ) {
         return path
     }
 
@@ -23,6 +30,8 @@ function tag_reference(path, script_type) {
     if (ideal_part === false) {
         return null;
     }
+
+    const code = generate(ideal_part.node).code;  // for debug
 
     const tag = tagging_function[script_type](ideal_part);
     if (tag) {
