@@ -17,16 +17,29 @@ def get_devices():
     payloads_collection = db["payloads"]
 
     pipeline = [
-        {"$group": {"_id": "$thx_guid", "payloads": {"$push": "$$ROOT"}}},
+        {"$group": {"_id": "$session_id", "payloads": {"$push": "$$ROOT"}}},
         {"$sort": {"payloads.timestamp": 1}},
-        #: filter where "jsou" in decoded_parameter_valie
-        {"$match": {"payloads.parameters.jb.decoded_parameter_value": {"$regex": ".*jsou.*"}}},
-        {"$project": {"payloads": {"$slice": ["$payloads", 1]}}}
     ]
 
     cursor = payloads_collection.aggregate(pipeline)
-    payloads = [_convert_query_string_to_dict(payload['payloads'][0]['parameters']['jb']['decoded_parameter_value']) for
-                payload in cursor]
-    payloads = [Device(data=payload) for payload in payloads if 'jsou' in payload]
+
+    sessions = [payload['payloads'] for payload in cursor if len(payload['payloads']) > 1]
+
+    device_dicts = []
+
+    for session in sessions:
+        session_dict = {}
+
+        for payload in session:
+            for parameter in payload['parameters']:
+                if payload['parameters'][parameter].get('decoded_parameter_value') is not None:
+                    session_dict = session_dict | _convert_query_string_to_dict(
+                        payload['parameters'][parameter]['decoded_parameter_value']
+                    )
+
+        if session_dict:
+            device_dicts.append(session_dict)
+
+    payloads = [Device(data=device) for device in device_dicts]
 
     return payloads
