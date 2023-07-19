@@ -3,6 +3,7 @@ from ...exceptions import FailedToRetrieveScriptException, FailedToValidateScrip
 from ...grpc_schema import services_pb2_grpc, services_pb2
 from ...profiling import Profiling
 from ...device import Device
+from ....config import GRPC_HOSTNAME
 import grpc
 
 
@@ -43,19 +44,14 @@ class Site:
 
     def parse(self, data: str) -> str: ...
 
-    def solve(self, session_id: str) -> bool:
+    def solve(self, session_id: str, device: Device) -> bool:
         script = self.get_config_script()
 
         profiling_url = self.get_tmx_profiling_url(script, session_id)
 
         response = requests.get(profiling_url, headers=self.headers)
 
-        profiling = Profiling(self.reveal_strings(response.text), Device({
-          "jsou": "Mac",
-          "jso": "Mac OS X 10_15_7",
-          "jsbu": "Chrome",
-          "jsb": "Chrome 114"
-        }), session_id)
+        profiling = Profiling(self.reveal_strings(response.text), device, session_id)
 
         profiling.solve()
 
@@ -85,7 +81,7 @@ class Site:
         else:
             params = [self.org_id, session_id] + params
 
-        with grpc.insecure_channel('localhost:50051') as channel:
+        with grpc.insecure_channel('{}:50051'.format(GRPC_HOSTNAME)) as channel:
             stub = services_pb2_grpc.TransformationServiceStub(channel)
 
             response = stub.CreateURLVM(services_pb2.CreateURLVMMessage(
@@ -100,7 +96,7 @@ class Site:
             return response.url
 
     def reveal_strings(self, script: str) -> str:
-        with grpc.insecure_channel('localhost:50051') as channel:
+        with grpc.insecure_channel('{}:50051'.format(GRPC_HOSTNAME)) as channel:
             stub = services_pb2_grpc.TransformationServiceStub(channel)
 
             response = stub.Transform(services_pb2.TransformationMessage(

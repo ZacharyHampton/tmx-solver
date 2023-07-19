@@ -1,4 +1,4 @@
-def encrypt(data: str, session_id: str) -> str:
+def encrypt(data: str, session_id: str) -> str | None:
     try:
         td_G = str(len(data)) + "&" + data
         td_r = ""
@@ -9,4 +9,4 @@ def encrypt(data: str, session_id: str) -> str:
             td_r += td_D[td_E & 15]
         return td_r
     except Exception as e:
-        return "None"
+        return None

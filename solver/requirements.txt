@@ -2,3 +2,13 @@ uvicorn[standard]
 fastapi
 requests
 esprima
+pymongo
+grpcio-tools
+grpcio
+httpx
+certifi
+gunicorn
+python-dotenv
+undetected-chromedriver
+selenium-wire
+beautifulsoup4

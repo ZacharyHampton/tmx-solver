@@ -1,3 +1,5 @@
+import random
+
 from . import Site
 import esprima
 import uuid
@@ -6,6 +8,7 @@ from selenium.webdriver.common.by import By
 import json
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from ...device import Device, get_devices
 
 
 class HomeDepot(Site):
@@ -49,7 +52,19 @@ class HomeDepot(Site):
     def test_solve(self) -> bool:
         session_id = self.generate_test_session_id()
 
-        solve_success = self.solve(session_id)
+        working_device = Device({
+          "jsou": "Mac",
+          "jso": "Mac OS X 10_15_7",
+          "jsbu": "Chrome",
+          "jsb": "Chrome 114"
+        })
+
+        """random_device = random.choice(get_devices())
+        if random_device is None:
+            return False"""
+
+        solve_success = self.solve(session_id, working_device)
+
         if not solve_success:
             return False
 

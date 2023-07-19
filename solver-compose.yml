@@ -1,0 +1,22 @@
+networks:
+    tmx-network:
+      name: tmx-network
+      driver: bridge
+
+services:
+  solver:
+    image: registry.digitalocean.com/tmx-registry/solver:latest
+    container_name: solver
+    ports:
+      - "8000:8000"
+    networks:
+      - tmx-network
+    links:
+      - deobfuscator
+  deobfuscator:
+    image: registry.digitalocean.com/tmx-registry/deobfuscator:latest
+    container_name: deobfuscator
+    expose:
+      - "50051"
+    networks:
+      - tmx-network

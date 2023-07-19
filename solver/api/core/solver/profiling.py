@@ -5,6 +5,7 @@ from .device import Device
 import httpx
 import asyncio
 from urllib.parse import urlencode, quote
+from ..config import GRPC_HOSTNAME
 from .encrypt import encrypt
 
 
@@ -51,7 +52,7 @@ class Profiling:
         return {field: self.device.data[field] for field in fields if self.device.data.get(field) is not None}
 
     def _get_tags(self):
-        with grpc.insecure_channel('localhost:50051') as channel:
+        with grpc.insecure_channel('{}:50051'.format(GRPC_HOSTNAME)) as channel:
             stub = services_pb2_grpc.LinkingServiceStub(channel)
 
             response = stub.LinkURLs(services_pb2.LinkURLsMessage(
