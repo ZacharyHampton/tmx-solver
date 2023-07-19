@@ -90,7 +90,7 @@ function link_urls(link_message, callback) {
 
                     if (!tag) continue;
 
-                    console.log(tag, left_name, url)
+                    // console.log(tag, left_name, url)
 
                     if (!urls[tag]) {
                         urls[tag] = {"urls": [url]};
@@ -98,7 +98,7 @@ function link_urls(link_message, callback) {
                         if (!urls[tag]["urls"].includes(url)) {
                             urls[tag]["urls"].push(url);
                         } else {
-                            console.log("Duplicate url:", url)
+                            // console.log("Duplicate url:", url)
                         }
                     }
                 }

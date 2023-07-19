@@ -31,7 +31,7 @@ function tag_reference(path, script_type) {
         return null;
     }
 
-    const code = generate(ideal_part.node).code;  // for debug
+    // const code = generate(ideal_part.node).code;  // for debug
 
     const tag = tagging_function[script_type](ideal_part);
     if (tag) {
