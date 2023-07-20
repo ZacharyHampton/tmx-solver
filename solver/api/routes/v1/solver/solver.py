@@ -18,6 +18,7 @@ devices = get_devices()
 class SolveRequest(BaseModel):
     session_id: str
     domain: Site
+    url: str
     proxy: str | None = None
 
 
@@ -42,12 +43,20 @@ def solve(solve_request: SolveRequest):
           "jsb": "Chrome 114"
         })"""
 
-    random_device = random.choice(devices)
+    def get_working_device():
+        for device in devices:
+            if device.data['jsou'] == 'Mac' and device.data['dr'] == "https://tmx.zacharysproducts.com/static" \
+                                                                     "/test/index.html":
+                return device
+
+    working_device = get_working_device()
+
+    #: random_device = random.choice(devices)
 
     message = None
     execution_time = None
     try:
-        success = site.solve(solve_request.session_id, random_device, proxy=solve_request.proxy)
+        success = site.solve(solve_request.session_id, working_device, proxy=solve_request.proxy)
         execution_time = round(time.time() - start_time, 2)
     except Exception as e:
         success = False

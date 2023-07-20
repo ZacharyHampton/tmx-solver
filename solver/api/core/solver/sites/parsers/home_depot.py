@@ -50,18 +50,31 @@ class HomeDepot(Site):
         return str(uuid.uuid4())
 
     def test_solve(self, session_id: str, proxy: str = None) -> bool:
-        working_device = Device({
+        """working_device = Device({
           "jsou": "Mac",
           "jso": "Mac OS X 10_15_7",
           "jsbu": "Chrome",
           "jsb": "Chrome 114"
-        })
+        })"""
+
+        def get_working_device(devices: list[Device]):
+            for device in devices:
+                if device.data['jsou'] == 'Mac' and device.data['dr'] == "https://tmx.zacharysproducts.com/static" \
+                                                                         "/test/index.html":
+                    return device
+
+        working_device = get_working_device(get_devices())
 
         """random_device = random.choice(get_devices())
         if random_device is None:
             return False"""
 
-        solve_success = self.solve(session_id, working_device, proxy=proxy)
+        solve_success = self.solve(
+            session_id,
+            working_device,
+            proxy=proxy,
+            url="https://www.homedepot.com/auth/view/signin?redirect=/&ref=null"
+        )
 
         if not solve_success:
             return False
@@ -103,6 +116,15 @@ class HomeDepot(Site):
         login_button.click()
 
         request = driver.wait_for_request('/customer/auth/v1/twostep/init', timeout=10)
-        return '"tmx":false' in request.response.body.decode('utf-8') and request.response.status_code == 200
+
+        success = '"tmx":false' in request.response.body.decode('utf-8') and request.response.status_code == 200
+        if not success:
+            if request.response.status_code == 200:
+                print('tmx:', json.loads(request.response.body.decode('utf-8'))['tmx'])
+
+            print('status code:', request.response.status_code)
+            print('body:', request.response.body.decode('utf-8'))
+
+        return success
 
 

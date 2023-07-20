@@ -1,8 +1,5 @@
 const {default: generate} = require("@babel/generator");
 
-let main_url_found = false;
-let lsa_payload_found = false;
-
 function main_tagging(ideal_part) {
     const checks = [
         check_for_main_url_payload,
@@ -18,23 +15,6 @@ function main_tagging(ideal_part) {
         const result = check(ideal_part);
 
         if (result !== undefined) {
-            switch (result) {
-                case "main_url_payload":
-                    if (main_url_found) {
-                        return null;
-                    }
-
-                    main_url_found = true;
-                    break;
-                case "lsa_payload":
-                    if (lsa_payload_found) {
-                        return null;
-                    }
-
-                    lsa_payload_found = true;
-                    break;
-            }
-
             return result;
         }
     }

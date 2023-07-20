@@ -49,6 +49,12 @@ class LinkURLsMessage(_message.Message):
     script_type: ScriptType
     def __init__(self, script: _Optional[str] = ..., script_type: _Optional[_Union[ScriptType, str]] = ...) -> None: ...
 
+class ListOfURLs(_message.Message):
+    __slots__ = ["urls"]
+    URLS_FIELD_NUMBER: _ClassVar[int]
+    urls: _containers.RepeatedScalarFieldContainer[str]
+    def __init__(self, urls: _Optional[_Iterable[str]] = ...) -> None: ...
+
 class LinkURLsResponse(_message.Message):
     __slots__ = ["urls", "script_type", "error"]
     class UrlsEntry(_message.Message):
@@ -56,12 +62,12 @@ class LinkURLsResponse(_message.Message):
         KEY_FIELD_NUMBER: _ClassVar[int]
         VALUE_FIELD_NUMBER: _ClassVar[int]
         key: str
-        value: str
-        def __init__(self, key: _Optional[str] = ..., value: _Optional[str] = ...) -> None: ...
+        value: ListOfURLs
+        def __init__(self, key: _Optional[str] = ..., value: _Optional[_Union[ListOfURLs, _Mapping]] = ...) -> None: ...
     URLS_FIELD_NUMBER: _ClassVar[int]
     SCRIPT_TYPE_FIELD_NUMBER: _ClassVar[int]
     ERROR_FIELD_NUMBER: _ClassVar[int]
-    urls: _containers.ScalarMap[str, str]
+    urls: _containers.MessageMap[str, ListOfURLs]
     script_type: ScriptType
     error: str
-    def __init__(self, urls: _Optional[_Mapping[str, str]] = ..., script_type: _Optional[_Union[ScriptType, str]] = ..., error: _Optional[str] = ...) -> None: ...
+    def __init__(self, urls: _Optional[_Mapping[str, ListOfURLs]] = ..., script_type: _Optional[_Union[ScriptType, str]] = ..., error: _Optional[str] = ...) -> None: ...

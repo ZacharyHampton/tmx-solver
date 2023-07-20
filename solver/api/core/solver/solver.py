@@ -2,11 +2,8 @@ from .grpc_schema import services_pb2_grpc, services_pb2
 import grpc
 from .exceptions import FailedToValidateScriptException
 from .device import Device
-import httpx
-import asyncio
-from urllib.parse import urlencode, quote
 from ..config import GRPC_HOSTNAME
-from .encrypt import encrypt
+from typing import NewType
 
 
 class Solver:
@@ -45,14 +42,6 @@ class Solver:
 
         self.tags = self._get_tags()
 
-        self.required_fields = []
-        self.optional_fields = []
-
-    def _get_required_device_data(self):
-        fields = self.required_fields + self.optional_fields
-
-        return {field: self.device.data[field] for field in fields if self.device.data.get(field) is not None}
-
     def _get_tags(self):
         with grpc.insecure_channel('{}:50051'.format(GRPC_HOSTNAME)) as channel:
             stub = services_pb2_grpc.LinkingServiceStub(channel)
@@ -65,15 +54,13 @@ class Solver:
             if response.error:
                 raise FailedToValidateScriptException('Failed to get {} script tags.'.format(self.script_type.lower()))
 
-            return response.urls
+            tags = response.urls
+
+            return {
+                tag: tags[tag].urls[0]
+                if len(tags[tag].urls) == 1
+                else tags[tag].urls
+                for tag in tags
+            }
 
     def solve(self): ...
-
-    @staticmethod
-    def json_to_query_string(json: dict) -> str:
-        placeholder = ""
-
-        for key, value in json.items():
-            placeholder += f"&{key}={quote(value)}"
-
-        return placeholder

@@ -6,6 +6,8 @@ from ...main_script import MainScript
 from ...device import Device
 from ....config import GRPC_HOSTNAME
 import grpc
+import hashlib
+import re
 
 
 class Site:
@@ -45,7 +47,16 @@ class Site:
 
     def parse(self, data: str) -> str: ...
 
-    def solve(self, session_id: str, device: Device, proxy: str = None) -> bool:
+    def solve(self, session_id: str, device: Device, url: str = None, proxy: str = None) -> bool:
+        if url is None:
+            url = f'https://{self.site_domain}/'
+
+        device.data['dr'] = f'https://{self.site_domain}/'
+        device.data['lh'] = url[:255]
+        hh_str = self.org_id + session_id
+        device.data['hh'] = hashlib.md5(hh_str.encode()).hexdigest()
+        self.headers['user-agent'] = device.data['lq']
+
         script = self.get_config_script()
 
         profiling_url = self.get_tmx_profiling_url(script, session_id)
@@ -61,7 +72,14 @@ class Site:
         profiling = Profiling(self.reveal_strings(response.text), device, session_id, proxy=proxy)
         main_script_src = profiling.solve()
 
-        main = MainScript(self.reveal_strings(main_script_src), device, session_id, proxy=proxy)
+        main_script_revealed = self.reveal_strings(main_script_src)
+        lsb, lsa = re.findall(r'([A-Fa-f0-9]{32})_', main_script_revealed)
+
+        #: TODO: validate; may be in wrong order, or dynamic
+        device.data['lsb'] = lsb
+        device.data['lsa'] = lsa
+
+        main = MainScript(main_script_revealed, device, session_id, proxy=proxy, org_id=self.org_id)
         main.solve()
 
         return True

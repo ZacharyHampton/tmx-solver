@@ -96,6 +96,15 @@ function link_urls(link_message, callback) {
                         urls[tag] = {"urls": [url]};
                     } else {
                         if (!urls[tag]["urls"].includes(url)) {
+                            switch (tag) {
+                                case "lsa_payload":
+                                    continue;
+                                case "main_url_payload":
+                                    continue;
+                                default:
+                                    break;
+                            }
+
                             urls[tag]["urls"].push(url);
                         } else {
                             // console.log("Duplicate url:", url)
