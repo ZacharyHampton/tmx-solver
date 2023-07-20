@@ -6,6 +6,7 @@ from .solver import Solver
 from .encrypt import encrypt
 from .payload import Payload
 from urllib.parse import quote
+from http.cookiejar import CookieJar
 
 
 class MainScript(Solver):
@@ -15,10 +16,15 @@ class MainScript(Solver):
             device: Device,
             session_id: str,
             org_id: str,
-            session: AsyncClient,
+            cookie_jar: CookieJar,
+            headers: dict,
+            proxy: str | None = None,
     ):
-        super().__init__(script, device, session_id, "MAIN", session)
+        super().__init__(script, device, session_id, "MAIN", cookie_jar)
+
         self.org_id = org_id
+        self.headers = headers
+        self.proxy = proxy
 
         #: process of main script
         #: fp png image
@@ -110,7 +116,7 @@ class MainScript(Solver):
     async def send_rev_payload(self):
         je = encrypt(self.rev_payload.get_query_string(self.device), self.session_id)
 
-        async with self.session as client:
+        async with httpx.AsyncClient(headers=self.headers, proxies=self.proxy, cookies=self.cookie_jar) as client:
             response = await client.get(
                 self.tags['rev_payload'] + '&je={}'.format(je),
             )
@@ -118,7 +124,7 @@ class MainScript(Solver):
             return response.status_code == 204
 
     async def send_ip_payload(self):
-        async with self.session as client:
+        async with httpx.AsyncClient(headers=self.headers, proxies=self.proxy, cookies=self.cookie_jar) as client:
             ip_response = await client.get('https://api.ipify.org?format=json')
 
             ip = ip_response.json()['ip']
@@ -133,7 +139,7 @@ class MainScript(Solver):
     async def send_jwk_payload(self):
         jf = encrypt(self.jwk_payload.get_query_string(self.device, include_ampersand=True)[1:], self.session_id)
 
-        async with self.session as client:
+        async with httpx.AsyncClient(headers=self.headers, proxies=self.proxy, cookies=self.cookie_jar) as client:
             response = await client.get(
                 self.tags['jwk_payload'] + '&jf={}'.format(jf),
             )
@@ -143,7 +149,7 @@ class MainScript(Solver):
     async def send_lsb_payload(self):
         jf = encrypt(self.lsb_payload.get_query_string(self.device, include_ampersand=False), self.session_id)
 
-        async with self.session as client:
+        async with httpx.AsyncClient(headers=self.headers, proxies=self.proxy, cookies=self.cookie_jar) as client:
             response = await client.get(
                 self.tags['lsa_payload'] + '&jf={}'.format(jf),
             )
@@ -153,7 +159,7 @@ class MainScript(Solver):
     async def send_fp_payload(self):
         je = encrypt(self.fp_payload.get_query_string(self.device), self.session_id)
 
-        async with self.session as client:
+        async with httpx.AsyncClient(headers=self.headers, proxies=self.proxy, cookies=self.cookie_jar) as client:
             response = await client.get(
                 self.tags['main_url_payload'] + '&jac=1&ja={}'.format(je),
             )
@@ -163,7 +169,7 @@ class MainScript(Solver):
     async def send_medh_payload(self):
         je = encrypt(self.medh_payload.get_query_string(self.device), self.session_id)
 
-        async with self.session as client:
+        async with httpx.AsyncClient(headers=self.headers, proxies=self.proxy, cookies=self.cookie_jar) as client:
             response = await client.get(
                 self.tags['medh_payload'] + '&jac=1&je={}'.format(je),
             )
@@ -176,7 +182,7 @@ class MainScript(Solver):
         ja = encrypt(main_query_string, self.session_id)
         jb = encrypt(self.main_payload_jb.get_query_string(self.device, include_ampersand=False), self.session_id)
 
-        async with self.session as client:
+        async with httpx.AsyncClient(headers=self.headers, proxies=self.proxy, cookies=self.cookie_jar) as client:
             response = await client.get(
                 self.tags['main_url_payload'] + '&ja={}&jb={}'.format(ja, jb),
             )
@@ -186,7 +192,7 @@ class MainScript(Solver):
     async def send_lsa_payload(self):
         jb = encrypt(self.lsa_payload.get_query_string(self.device, include_ampersand=False), self.session_id)
 
-        async with self.session as client:
+        async with httpx.AsyncClient(headers=self.headers, proxies=self.proxy, cookies=self.cookie_jar) as client:
             response = await client.get(
                 self.tags['lsa_payload'] + '&jb={}'.format(jb),
             )
@@ -194,7 +200,7 @@ class MainScript(Solver):
             return response.status_code == 204
 
     async def request_fp_clear_image(self):
-        headers = self.session.headers.copy()
+        headers = self.headers.copy()
         tag_from = self.tags['embedded_img_online_metrix']
         index = tag_from.index('sac.d.aa.online-metrix.net')
         code = tag_from[index-16:index]
@@ -202,15 +208,15 @@ class MainScript(Solver):
 
         headers['accept'] = "*/*, " + key
 
-        async with self.session as client:
+        async with httpx.AsyncClient(headers=self.headers, proxies=self.proxy, cookies=self.cookie_jar) as client:
             await client.get(self.tags["embedded_image_fp_clear_png"], headers=headers)
 
     async def request_to_iframes(self):
         urls = self.tags["online_metrix_iframe"]
 
-        async with self.session as client:
+        async with httpx.AsyncClient(headers=self.headers, proxies=self.proxy, cookies=self.cookie_jar) as client:
             await asyncio.gather(*[client.get(url) for url in urls])
 
     async def request_to_online_matrix_image(self):
-        async with self.session as client:
+        async with httpx.AsyncClient(headers=self.headers, proxies=self.proxy, cookies=self.cookie_jar) as client:
             await client.get(self.tags["embedded_img_online_metrix"])

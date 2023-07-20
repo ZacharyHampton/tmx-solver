@@ -5,6 +5,7 @@ from .device import Device
 from ..config import GRPC_HOSTNAME
 from typing import NewType
 from httpx import AsyncClient
+from http.cookiejar import CookieJar
 
 
 class Solver:
@@ -14,13 +15,13 @@ class Solver:
             device: Device,
             session_id: str,
             script_type: str,
-            session: AsyncClient,
+            cookie_jar: CookieJar,
     ):
         self.script = script
         self.device = device
         self.session_id = session_id
         self.script_type = script_type
-        self.session = session
+        self.cookie_jar = cookie_jar
 
         self.tags = self._get_tags()
 
