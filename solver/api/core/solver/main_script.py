@@ -1,5 +1,6 @@
 from .device import Device
 import httpx
+from httpx import AsyncClient
 import asyncio
 from .solver import Solver
 from .encrypt import encrypt
@@ -14,10 +15,9 @@ class MainScript(Solver):
             device: Device,
             session_id: str,
             org_id: str,
-            headers: dict = None,
-            proxy: str = None
+            session: AsyncClient,
     ):
-        super().__init__(script, device, session_id, "MAIN", headers, proxy)
+        super().__init__(script, device, session_id, "MAIN", session)
         self.org_id = org_id
 
         #: process of main script
@@ -72,9 +72,10 @@ class MainScript(Solver):
             "jfh",
             "jftn",
             "pm",
+            "batst"
             "audh",
             "ex3",
-        ], optional_fields=["batst"])
+        ])
 
         self.lsb_payload = Payload(required_fields=["lsb"])
 
@@ -85,7 +86,7 @@ class MainScript(Solver):
             "sid_key",
             "sid_sig",
             "sifr",
-        ])
+        ])  #: probably is dynamic
 
         #: ip payload = wei = ip address
 
@@ -109,16 +110,15 @@ class MainScript(Solver):
     async def send_rev_payload(self):
         je = encrypt(self.rev_payload.get_query_string(self.device), self.session_id)
 
-        async with httpx.AsyncClient(proxies=self.proxy) as client:
+        async with self.session as client:
             response = await client.get(
                 self.tags['rev_payload'] + '&je={}'.format(je),
-                headers=self.headers,
             )
 
             return response.status_code == 204
 
     async def send_ip_payload(self):
-        async with httpx.AsyncClient(proxies=self.proxy) as client:
+        async with self.session as client:
             ip_response = await client.get('https://api.ipify.org?format=json')
 
             ip = ip_response.json()['ip']
@@ -126,7 +126,6 @@ class MainScript(Solver):
 
             response = await client.get(
                 self.tags['jwk_payload'] + '&jac=1&je={}'.format(je),
-                headers=self.headers,
             )
 
             return response.status_code == 204
@@ -134,10 +133,9 @@ class MainScript(Solver):
     async def send_jwk_payload(self):
         jf = encrypt(self.jwk_payload.get_query_string(self.device, include_ampersand=True)[1:], self.session_id)
 
-        async with httpx.AsyncClient(proxies=self.proxy) as client:
+        async with self.session as client:
             response = await client.get(
                 self.tags['jwk_payload'] + '&jf={}'.format(jf),
-                headers=self.headers,
             )
 
             return response.status_code == 204
@@ -145,10 +143,9 @@ class MainScript(Solver):
     async def send_lsb_payload(self):
         jf = encrypt(self.lsb_payload.get_query_string(self.device, include_ampersand=False), self.session_id)
 
-        async with httpx.AsyncClient(proxies=self.proxy) as client:
+        async with self.session as client:
             response = await client.get(
                 self.tags['lsa_payload'] + '&jf={}'.format(jf),
-                headers=self.headers,
             )
 
             return response.status_code == 204
@@ -156,10 +153,9 @@ class MainScript(Solver):
     async def send_fp_payload(self):
         je = encrypt(self.fp_payload.get_query_string(self.device), self.session_id)
 
-        async with httpx.AsyncClient(proxies=self.proxy) as client:
+        async with self.session as client:
             response = await client.get(
                 self.tags['main_url_payload'] + '&jac=1&ja={}'.format(je),
-                headers=self.headers,
             )
 
             return response.status_code == 204
@@ -167,10 +163,9 @@ class MainScript(Solver):
     async def send_medh_payload(self):
         je = encrypt(self.medh_payload.get_query_string(self.device), self.session_id)
 
-        async with httpx.AsyncClient(proxies=self.proxy) as client:
+        async with self.session as client:
             response = await client.get(
                 self.tags['medh_payload'] + '&jac=1&je={}'.format(je),
-                headers=self.headers,
             )
 
             return response.status_code == 204
@@ -181,10 +176,9 @@ class MainScript(Solver):
         ja = encrypt(main_query_string, self.session_id)
         jb = encrypt(self.main_payload_jb.get_query_string(self.device, include_ampersand=False), self.session_id)
 
-        async with httpx.AsyncClient(proxies=self.proxy) as client:
+        async with self.session as client:
             response = await client.get(
                 self.tags['main_url_payload'] + '&ja={}&jb={}'.format(ja, jb),
-                headers=self.headers,
             )
 
             return response.status_code == 204
@@ -192,16 +186,15 @@ class MainScript(Solver):
     async def send_lsa_payload(self):
         jb = encrypt(self.lsa_payload.get_query_string(self.device, include_ampersand=False), self.session_id)
 
-        async with httpx.AsyncClient(proxies=self.proxy) as client:
+        async with self.session as client:
             response = await client.get(
                 self.tags['lsa_payload'] + '&jb={}'.format(jb),
-                headers=self.headers,
             )
 
             return response.status_code == 204
 
     async def request_fp_clear_image(self):
-        headers = self.headers.copy()
+        headers = self.session.headers.copy()
         tag_from = self.tags['embedded_img_online_metrix']
         index = tag_from.index('sac.d.aa.online-metrix.net')
         code = tag_from[index-16:index]
@@ -209,15 +202,15 @@ class MainScript(Solver):
 
         headers['accept'] = "*/*, " + key
 
-        async with httpx.AsyncClient(proxies=self.proxy) as client:
+        async with self.session as client:
             await client.get(self.tags["embedded_image_fp_clear_png"], headers=headers)
 
     async def request_to_iframes(self):
         urls = self.tags["online_metrix_iframe"]
 
-        async with httpx.AsyncClient(proxies=self.proxy) as client:
-            await asyncio.gather(*[client.get(url, headers=self.headers) for url in urls])
+        async with self.session as client:
+            await asyncio.gather(*[client.get(url) for url in urls])
 
     async def request_to_online_matrix_image(self):
-        async with httpx.AsyncClient(proxies=self.proxy) as client:
-            await client.get(self.tags["embedded_img_online_metrix"], headers=self.headers)
+        async with self.session as client:
+            await client.get(self.tags["embedded_img_online_metrix"])

@@ -4,6 +4,7 @@ import asyncio
 from .solver import Solver
 from .encrypt import encrypt
 from .payload import Payload
+from httpx import AsyncClient
 
 
 class Profiling(Solver):
@@ -12,10 +13,9 @@ class Profiling(Solver):
             script: str,
             device: Device,
             session_id: str,
-            headers: dict = None,
-            proxy: str = None
+            session: AsyncClient,
     ):
-        super().__init__(script, device, session_id, "PROFILING", headers, proxy)
+        super().__init__(script, device, session_id, "PROFILING", session)
 
         self.profiling_payload = Payload(
             required_fields=[
@@ -38,8 +38,8 @@ class Profiling(Solver):
     async def _request_to_images(self):
         urls = [self.tags["embedded_image_img"], self.tags["embedded_image_p"]]
 
-        async with httpx.AsyncClient(proxies=self.proxy) as client:
-            await asyncio.gather(*[client.get(url, headers=self.headers) for url in urls])
+        async with self.session as client:
+            await asyncio.gather(*[client.get(url) for url in urls])
 
     async def _submit_profiling_data(self) -> str:
         payload = self.profiling_payload
@@ -47,10 +47,9 @@ class Profiling(Solver):
         query = payload.get_query_string(self.device)
         encrypted_query = encrypt(query, self.session_id)
 
-        async with httpx.AsyncClient(proxies=self.proxy) as client:
+        async with self.session as client:
             response = await client.get(
                 self.tags['profiling_url'] + '&jb={}'.format(encrypted_query),
-                headers=self.headers,
             )
 
             return response.text

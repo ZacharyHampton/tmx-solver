@@ -8,6 +8,8 @@ from ....config import GRPC_HOSTNAME
 import grpc
 import hashlib
 import re
+import httpx
+import asyncio
 
 
 class Site:
@@ -49,9 +51,9 @@ class Site:
 
     def solve(self, session_id: str, device: Device, url: str = None, proxy: str = None) -> bool:
         if url is None:
-            url = f'https://{self.site_domain}/'
+            url = f'https://www.{self.site_domain}/'
 
-        device.data['dr'] = f'https://{self.site_domain}/'
+        device.data['dr'] = f'https://www.{self.site_domain}/'
         device.data['lh'] = url[:255]
         hh_str = self.org_id + session_id
         device.data['hh'] = hashlib.md5(hh_str.encode()).hexdigest()
@@ -64,12 +66,10 @@ class Site:
         if proxy is not None:
             proxy = 'http://' + proxy
 
-        response = requests.get(profiling_url, headers=self.headers, proxies={
-            'https': proxy,
-            'http': proxy
-        } if proxy is not None else None)
+        session = httpx.AsyncClient(proxies=proxy, headers=self.headers)
+        response = asyncio.run(session.get(profiling_url))
 
-        profiling = Profiling(self.reveal_strings(response.text), device, session_id, proxy=proxy)
+        profiling = Profiling(self.reveal_strings(response.text), device, session_id, session)
         main_script_src = profiling.solve()
 
         main_script_revealed = self.reveal_strings(main_script_src)
@@ -79,7 +79,7 @@ class Site:
         device.data['lsb'] = lsb
         device.data['lsa'] = lsa
 
-        main = MainScript(main_script_revealed, device, session_id, proxy=proxy, org_id=self.org_id)
+        main = MainScript(main_script_revealed, device, session_id, org_id=self.org_id, session=session)
         main.solve()
 
         return True
