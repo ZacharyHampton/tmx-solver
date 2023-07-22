@@ -6,6 +6,25 @@ from ..config import GRPC_HOSTNAME
 from typing import NewType
 from httpx import AsyncClient
 from http.cookiejar import CookieJar
+from pydantic import BaseModel
+from dataclasses import field
+import queue
+
+"""For analytics."""
+
+
+class TMXPayload(BaseModel):
+    raw_payload: str
+    decoded_payload: str | None = None
+    json_payload: dict[str, str] | None = None
+
+
+class TMXRequest(BaseModel):
+    method: str
+    url: str
+    headers: dict[str, str]
+
+    payloads: list[TMXPayload] = field(default_factory=list)
 
 
 class Solver:
@@ -22,8 +41,11 @@ class Solver:
         self.session_id = session_id
         self.script_type = script_type
         self.cookie_jar = cookie_jar
+        self.requests = queue.Queue()
 
         self.tags = self._get_tags()
+
+    def process_requests_queue(self) -> list[TMXRequest]: ...
 
     def _get_tags(self):
         with grpc.insecure_channel('{}:50051'.format(GRPC_HOSTNAME)) as channel:

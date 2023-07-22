@@ -57,13 +57,7 @@ class HomeDepot(Site):
           "jsb": "Chrome 114"
         })"""
 
-        def get_working_device(devices: list[Device]):
-            for device in devices:
-                if device.data['jsou'] == 'Mac' and device.data['dr'] == "https://tmx.zacharysproducts.com/static" \
-                                                                         "/test/index.html":
-                    return device
-
-        working_device = get_working_device(get_devices())
+        working_device = self.get_testing_device(get_devices())
 
         """random_device = random.choice(get_devices())
         if random_device is None:

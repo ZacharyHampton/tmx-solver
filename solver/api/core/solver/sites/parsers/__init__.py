@@ -3,7 +3,7 @@ from ...exceptions import FailedToRetrieveScriptException, FailedToValidateScrip
 from ...grpc_schema import services_pb2_grpc, services_pb2
 from ...profiling import Profiling
 from ...main_script import MainScript
-from ...device import Device
+from ...device import Device, get_devices
 from ....config import GRPC_HOSTNAME
 import grpc
 import hashlib
@@ -48,9 +48,17 @@ class Site:
         self.tmx_hostname = tmx_hostname
         self.org_id = org_id
 
-    def parse(self, data: str) -> str: ...
+    def parse(self, data: str) -> str:
+        ...
 
-    def solve(self, session_id: str, device: Device, url: str = None, proxy: str = None) -> bool:
+    @staticmethod
+    def get_testing_device(devices: list[Device]):
+        for device in devices:
+            if device.data['jsou'] == 'Mac' and device.data['dr'] == "https://tmx.zacharysproducts.com/static" \
+                                                                     "/test/index.html":
+                return device
+
+    def solve(self, session_id: str, device: Device, url: str = None, proxy: str = None) -> tuple[bool, list[TMXRequests]]:
         if url is None:
             url = f'https://www.{self.site_domain}/'
 
@@ -71,27 +79,36 @@ class Site:
         with httpx.Client(headers=self.headers, proxies=proxy, cookies=cookie_jar) as session:
             response = session.get(profiling_url)
 
-        profiling = Profiling(self.reveal_strings(response.text), device, session_id, cookie_jar=cookie_jar, headers=self.headers, proxy=proxy)
+        profiling = Profiling(self.reveal_strings(response.text), device, session_id, cookie_jar=cookie_jar,
+                              headers=self.headers, proxy=proxy)
         main_script_src = profiling.solve()
 
         main_script_revealed = self.reveal_strings(main_script_src)
-        lsa, lsb = re.findall(r'([A-Fa-f0-9]{32})_', main_script_revealed)
+        lsb, lsa = re.findall(r'([A-Fa-f0-9]{32})_', main_script_revealed)
 
         #: TODO: validate; may be in wrong order, or dynamic
         device.data['lsb'] = lsb
         device.data['lsa'] = lsa
 
-        main = MainScript(main_script_revealed, device, session_id, org_id=self.org_id, cookie_jar=cookie_jar, headers=self.headers, proxy=proxy)
+        main = MainScript(main_script_revealed, device, session_id, org_id=self.org_id, cookie_jar=cookie_jar,
+                          headers=self.headers, proxy=proxy)
         main.solve()
 
-        return True
+        solver_analytic_requests = []
+        solver_analytic_requests += profiling.process_requests_queue()
+        solver_analytic_requests += main.process_requests_queue()
 
-    def test_solve(self, session_id: str, proxy: str = None) -> bool: ...
+        return True, solver_analytic_requests
+
+    def test_solve(self, session_id: str, proxy: str = None) -> bool:
+        ...
 
     @staticmethod
-    def validate_session_id(session_id: str) -> bool: ...
+    def validate_session_id(session_id: str) -> bool:
+        ...
 
-    def generate_test_session_id(self) -> str: ...
+    def generate_test_session_id(self) -> str:
+        ...
 
     def get_config_script(self):
         if self.headers is not None:
@@ -140,5 +157,3 @@ class Site:
                 raise FailedToValidateScriptException(f'Failed to reveal strings for {self.site_name}')
 
             return response.script
-
-

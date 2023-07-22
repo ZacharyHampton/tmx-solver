@@ -43,13 +43,7 @@ def solve(solve_request: SolveRequest):
           "jsb": "Chrome 114"
         })"""
 
-    def get_working_device():
-        for device in devices:
-            if device.data['jsou'] == 'Mac' and device.data['dr'] == "https://tmx.zacharysproducts.com/static" \
-                                                                     "/test/index.html":
-                return device
-
-    working_device = get_working_device()
+    working_device = site.get_testing_device(devices)
 
     #: random_device = random.choice(devices)
 
