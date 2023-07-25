@@ -2,7 +2,7 @@ from .device import Device
 import httpx
 from httpx import AsyncClient
 import asyncio
-from .solver import Solver
+from .solver import Solver, TMXPayload
 from .encrypt import encrypt
 from .payload import Payload
 from urllib.parse import quote
@@ -114,12 +114,22 @@ class MainScript(Solver):
         return True
 
     async def send_rev_payload(self):
-        je = encrypt(self.rev_payload.get_query_string(self.device), self.session_id)
+        je = encrypt(decoded_payload := self.rev_payload.get_query_string(self.device), self.session_id)
 
         async with httpx.AsyncClient(headers=self.headers, proxies=self.proxy, cookies=self.cookie_jar) as client:
             response = await client.get(
                 self.tags['rev_payload'] + '&je={}'.format(je),
             )
+
+            self.add_request(response,
+                             payloads=[
+                                 TMXPayload(
+                                     key="je",
+                                     raw_payload=je,
+                                     decoded_payload=decoded_payload,
+                                     json_payload=self.rev_payload.get_required_device_data(self.device)
+                                 )
+                             ])
 
             return response.status_code == 204
 
@@ -128,51 +138,115 @@ class MainScript(Solver):
             ip_response = await client.get('https://api.ipify.org?format=json')
 
             ip = ip_response.json()['ip']
-            je = encrypt("wei={}".format(quote(ip)), self.session_id)
+            je = encrypt(decoded_payload := "wei={}".format(quote(ip)), self.session_id)
 
             response = await client.get(
                 self.tags['jwk_payload'] + '&jac=1&je={}'.format(je),
             )
 
+            self.add_request(response,
+                             payloads=[
+                                 TMXPayload(
+                                     key="jac",
+                                     raw_payload="1",
+                                 ),
+                                 TMXPayload(
+                                     key="je",
+                                     raw_payload=je,
+                                     decoded_payload=decoded_payload,
+                                     json_payload={"wei": ip}
+                                 )
+                             ])
+
             return response.status_code == 204
 
     async def send_jwk_payload(self):
-        jf = encrypt(self.jwk_payload.get_query_string(self.device, include_ampersand=True)[1:], self.session_id)
+        jf = encrypt(decoded_payload := (self.jwk_payload.get_query_string(self.device, include_ampersand=True)[1:]),
+                     self.session_id)
 
         async with httpx.AsyncClient(headers=self.headers, proxies=self.proxy, cookies=self.cookie_jar) as client:
             response = await client.get(
                 self.tags['jwk_payload'] + '&jf={}'.format(jf),
             )
 
+            self.add_request(response,
+                             payloads=[
+                                 TMXPayload(
+                                     key="jf",
+                                     raw_payload=jf,
+                                     decoded_payload=decoded_payload,
+                                     json_payload=self.jwk_payload.get_required_device_data(self.device)
+                                 )
+                             ])
+
             return response.status_code == 204
 
     async def send_lsb_payload(self):
-        jf = encrypt(self.lsb_payload.get_query_string(self.device, include_ampersand=False), self.session_id)
+        jf = encrypt(decoded_payload := self.lsb_payload.get_query_string(self.device, include_ampersand=False),
+                     self.session_id)
 
         async with httpx.AsyncClient(headers=self.headers, proxies=self.proxy, cookies=self.cookie_jar) as client:
             response = await client.get(
                 self.tags['lsa_payload'] + '&jf={}'.format(jf),
             )
 
+            self.add_request(response,
+                             payloads=[
+                                 TMXPayload(
+                                     key="jf",
+                                     raw_payload=jf,
+                                     decoded_payload=decoded_payload,
+                                     json_payload=self.lsb_payload.get_required_device_data(self.device)
+                                 )
+                             ])
+
             return response.status_code == 204
 
     async def send_fp_payload(self):
-        je = encrypt(self.fp_payload.get_query_string(self.device), self.session_id)
+        je = encrypt(decoded_payload := self.fp_payload.get_query_string(self.device), self.session_id)
 
         async with httpx.AsyncClient(headers=self.headers, proxies=self.proxy, cookies=self.cookie_jar) as client:
             response = await client.get(
                 self.tags['main_url_payload'] + '&jac=1&ja={}'.format(je),
             )
 
+            self.add_request(response,
+                             payloads=[
+                                 TMXPayload(
+                                     key="jac",
+                                     raw_payload="1",
+                                 ),
+                                 TMXPayload(
+                                     key="ja",
+                                     raw_payload=je,
+                                     decoded_payload=decoded_payload,
+                                     json_payload=self.fp_payload.get_required_device_data(self.device)
+                                 )
+                             ])
+
             return response.status_code == 204
 
     async def send_medh_payload(self):
-        je = encrypt(self.medh_payload.get_query_string(self.device), self.session_id)
+        je = encrypt(decoded_payload := self.medh_payload.get_query_string(self.device), self.session_id)
 
         async with httpx.AsyncClient(headers=self.headers, proxies=self.proxy, cookies=self.cookie_jar) as client:
             response = await client.get(
                 self.tags['medh_payload'] + '&jac=1&je={}'.format(je),
             )
+
+            self.add_request(response,
+                             payloads=[
+                                 TMXPayload(
+                                     key="jac",
+                                     raw_payload="1",
+                                 ),
+                                 TMXPayload(
+                                     key="je",
+                                     raw_payload=je,
+                                     decoded_payload=decoded_payload,
+                                     json_payload=self.medh_payload.get_required_device_data(self.device)
+                                 )
+                             ])
 
             return response.status_code == 204
 
@@ -180,22 +254,50 @@ class MainScript(Solver):
         main_query_string = self.main_payload_ja.get_query_string(self.device)
 
         ja = encrypt(main_query_string, self.session_id)
-        jb = encrypt(self.main_payload_jb.get_query_string(self.device, include_ampersand=False), self.session_id)
+        jb = encrypt(jb_payload := self.main_payload_jb.get_query_string(self.device, include_ampersand=False),
+                     self.session_id)
 
         async with httpx.AsyncClient(headers=self.headers, proxies=self.proxy, cookies=self.cookie_jar) as client:
             response = await client.get(
                 self.tags['main_url_payload'] + '&ja={}&jb={}'.format(ja, jb),
             )
 
+            self.add_request(response,
+                             payloads=[
+                                 TMXPayload(
+                                     key="ja",
+                                     raw_payload=ja,
+                                     decoded_payload=main_query_string,
+                                     json_payload=self.main_payload_ja.get_required_device_data(self.device)
+                                 ),
+                                 TMXPayload(
+                                     key="jb",
+                                     raw_payload=jb,
+                                     decoded_payload=jb_payload,
+                                     json_payload=self.main_payload_jb.get_required_device_data(self.device)
+                                 )
+                             ])
+
             return response.status_code == 204
 
     async def send_lsa_payload(self):
-        jb = encrypt(self.lsa_payload.get_query_string(self.device, include_ampersand=False), self.session_id)
+        jb = encrypt(decoded_payload := self.lsa_payload.get_query_string(self.device, include_ampersand=False),
+                     self.session_id)
 
         async with httpx.AsyncClient(headers=self.headers, proxies=self.proxy, cookies=self.cookie_jar) as client:
             response = await client.get(
                 self.tags['lsa_payload'] + '&jb={}'.format(jb),
             )
+
+            self.add_request(response,
+                             payloads=[
+                                 TMXPayload(
+                                     key="jb",
+                                     raw_payload=jb,
+                                     decoded_payload=decoded_payload,
+                                     json_payload=self.lsa_payload.get_required_device_data(self.device)
+                                 )
+                             ])
 
             return response.status_code == 204
 
@@ -203,20 +305,27 @@ class MainScript(Solver):
         headers = self.headers.copy()
         tag_from = self.tags['embedded_img_online_metrix']
         index = tag_from.index('sac.d.aa.online-metrix.net')
-        code = tag_from[index-16:index]
+        code = tag_from[index - 16:index]
         key = self.org_id + "/" + code + self.session_id
 
         headers['accept'] = "*/*, " + key
 
         async with httpx.AsyncClient(headers=self.headers, proxies=self.proxy, cookies=self.cookie_jar) as client:
-            await client.get(self.tags["embedded_image_fp_clear_png"], headers=headers)
+            response = await client.get(self.tags["embedded_image_fp_clear_png"], headers=headers)
+
+            self.add_request(response)
 
     async def request_to_iframes(self):
         urls = self.tags["online_metrix_iframe"]
 
         async with httpx.AsyncClient(headers=self.headers, proxies=self.proxy, cookies=self.cookie_jar) as client:
-            await asyncio.gather(*[client.get(url) for url in urls])
+            results = await asyncio.gather(*[client.get(url) for url in urls])
+
+            for result in results:
+                self.add_request(result)
 
     async def request_to_online_matrix_image(self):
         async with httpx.AsyncClient(headers=self.headers, proxies=self.proxy, cookies=self.cookie_jar) as client:
-            await client.get(self.tags["embedded_img_online_metrix"])
+            response = await client.get(self.tags["embedded_img_online_metrix"])
+
+            self.add_request(response)

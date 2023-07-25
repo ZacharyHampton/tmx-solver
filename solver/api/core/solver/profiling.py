@@ -1,7 +1,7 @@
 from .device import Device
 import httpx
 import asyncio
-from .solver import Solver
+from .solver import Solver, TMXPayload
 from .encrypt import encrypt
 from .payload import Payload
 from httpx import AsyncClient
@@ -45,7 +45,10 @@ class Profiling(Solver):
         urls = [self.tags["embedded_image_img"], self.tags["embedded_image_p"]]
 
         async with httpx.AsyncClient(headers=self.headers, proxies=self.proxy, cookies=self.cookie_jar) as client:
-            await asyncio.gather(*[client.get(url) for url in urls])
+            results = await asyncio.gather(*[client.get(url) for url in urls])
+
+            for result in results:
+                self.add_request(result)
 
     async def _submit_profiling_data(self) -> str:
         payload = self.profiling_payload
@@ -57,5 +60,15 @@ class Profiling(Solver):
             response = await client.get(
                 self.tags['profiling_url'] + '&jb={}'.format(encrypted_query),
             )
+
+            self.add_request(response,
+                             payloads=[
+                                 TMXPayload(
+                                    key="jb",
+                                    raw_payload=encrypted_query,
+                                    decoded_payload=query,
+                                    json_payload=payload.get_required_device_data(self.device)
+                                 )
+                             ])
 
             return response.text

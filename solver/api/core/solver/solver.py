@@ -4,7 +4,7 @@ from .exceptions import FailedToValidateScriptException
 from .device import Device
 from ..config import GRPC_HOSTNAME
 from typing import NewType
-from httpx import AsyncClient
+from httpx import Response
 from http.cookiejar import CookieJar
 from pydantic import BaseModel
 from dataclasses import field
@@ -14,6 +14,7 @@ import queue
 
 
 class TMXPayload(BaseModel):
+    key: str
     raw_payload: str
     decoded_payload: str | None = None
     json_payload: dict[str, str] | None = None
@@ -45,7 +46,21 @@ class Solver:
 
         self.tags = self._get_tags()
 
-    def process_requests_queue(self) -> list[TMXRequest]: ...
+    def process_requests_queue(self) -> list[TMXRequest]:
+        requests = []
+
+        while not self.requests.empty():
+            requests.append(self.requests.get())
+
+        return requests
+
+    def add_request(self, response: Response, payloads: list[TMXPayload] = None):
+        self.requests.put(TMXRequest(
+            method=response.request.method,
+            url=str(response.request.url).split("?")[0],
+            headers=dict(response.request.headers),
+            payloads=payloads or [],
+        ))
 
     def _get_tags(self):
         with grpc.insecure_channel('{}:50051'.format(GRPC_HOSTNAME)) as channel:

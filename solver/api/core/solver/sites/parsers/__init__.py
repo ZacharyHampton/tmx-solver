@@ -2,6 +2,7 @@ import requests
 from ...exceptions import FailedToRetrieveScriptException, FailedToValidateScriptException
 from ...grpc_schema import services_pb2_grpc, services_pb2
 from ...profiling import Profiling
+from ...solver import TMXRequest
 from ...main_script import MainScript
 from ...device import Device, get_devices
 from ....config import GRPC_HOSTNAME
@@ -58,7 +59,16 @@ class Site:
                                                                      "/test/index.html":
                 return device
 
-    def solve(self, session_id: str, device: Device, url: str = None, proxy: str = None) -> tuple[bool, list[TMXRequests]]:
+    def solve(
+            self,
+            session_id: str,
+            device: Device,
+            url: str = None,
+            proxy: str = None,
+            predefined_script: bool = False,
+            profiling_script: str = None,
+            main_script: str = None,
+    ) -> tuple[bool, list[TMXRequest]]:
         if url is None:
             url = f'https://www.{self.site_domain}/'
 
@@ -68,22 +78,29 @@ class Site:
         device.data['hh'] = hashlib.md5(hh_str.encode()).hexdigest()
         self.headers['user-agent'] = device.data['lq']
 
-        script = self.get_config_script()
-
-        profiling_url = self.get_tmx_profiling_url(script, session_id)
-
         if proxy is not None:
             proxy = 'http://' + proxy
 
         cookie_jar = CookieJar()
-        with httpx.Client(headers=self.headers, proxies=proxy, cookies=cookie_jar) as session:
-            response = session.get(profiling_url)
 
-        profiling = Profiling(self.reveal_strings(response.text), device, session_id, cookie_jar=cookie_jar,
+        if not predefined_script:
+            script = self.get_config_script()
+
+            profiling_url = self.get_tmx_profiling_url(script, session_id)
+
+            with httpx.Client(headers=self.headers, proxies=proxy, cookies=cookie_jar) as session:
+                response = session.get(profiling_url)
+                profiling_script = response.text
+
+        profiling = Profiling(self.reveal_strings(profiling_script), device, session_id, cookie_jar=cookie_jar,
                               headers=self.headers, proxy=proxy)
-        main_script_src = profiling.solve()
 
-        main_script_revealed = self.reveal_strings(main_script_src)
+        if not predefined_script:
+            main_script = profiling.solve()
+        else:
+            profiling.solve()
+
+        main_script_revealed = self.reveal_strings(main_script)
         lsb, lsa = re.findall(r'([A-Fa-f0-9]{32})_', main_script_revealed)
 
         #: TODO: validate; may be in wrong order, or dynamic
