@@ -2,7 +2,7 @@ syntax = "proto3";
 
 message TransformationMessage {
   string script = 1;
-  optional bool fast = 2;
+  optional string transformation_type = 2;
   optional string error = 3;
 }
 

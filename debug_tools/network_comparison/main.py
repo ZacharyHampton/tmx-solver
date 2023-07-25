@@ -182,7 +182,12 @@ def main():
         solver_requests=solver_requests
     )
 
-    print(requests)
+    for url in requests:
+        if '.js' in url:
+            continue
+
+        #: start testing
+
 
 
 if __name__ == "__main__":

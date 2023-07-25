@@ -31,7 +31,7 @@ mongo_client = MongoClient(config.MONGODB_URI, tlsCAFile=certifi.where())
 db = mongo_client["harvester"]
 payloads_collection = db["payloads"]
 
-r = redis.from_url(config.REDIS_URL, decode_responses=True, ssl_cert_reqs=None)
+r = redis.from_url(config.REDIS_URL, decode_responses=True)
 
 """Act as a proxy server to request to hostname. Support all paths."""
 
@@ -57,7 +57,7 @@ def deobfuscate_and_replace(response):
 
         response = stub.Transform(services_pb2.TransformationMessage(
             script=response.text,
-            fast=True,
+            transformation_type="string_deobfuscation",
         ))
 
         if response.error:

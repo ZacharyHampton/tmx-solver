@@ -14,10 +14,16 @@ const {simplifyIfAndLogicalVisitor} = require("./transformers/unreachable_code")
 const { proxyVisitor } = require("./transformers/proxy_functions.js")
 
 
-function deobfuscate(source, fast) {
+function deobfuscate(source, deob_type) {
     const ast = parser.parse(source);
 
-    if (!fast) {
+    if (deob_type === "string_deobfuscation") {
+        replace_hex_substrings(ast, true);
+    } else if (deob_type === "tagging") {
+        traverse(ast, functionWrapperVisitor)
+        replace_hex_substrings(ast, true);
+        traverse(ast, fake_variable_overwrite_visitor);
+    } else {
         traverse(ast, functionWrapperVisitor)
         traverse(ast, numberToStringVisitor);
         replace_hex_substrings(ast);
@@ -28,10 +34,6 @@ function deobfuscate(source, fast) {
         traverse(ast, evalReplacementVisitor);
         traverse(ast, simplifyIfAndLogicalVisitor);
         //traverse(ast, proxyVisitor);
-    } else {
-        traverse(ast, functionWrapperVisitor)
-        replace_hex_substrings(ast, true);
-        traverse(ast, fake_variable_overwrite_visitor);
     }
 
     let deobfCode = generate(ast, { comments: false }).code;

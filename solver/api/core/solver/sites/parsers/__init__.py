@@ -55,8 +55,7 @@ class Site:
     @staticmethod
     def get_testing_device(devices: list[Device]):
         for device in devices:
-            if device.data['jsou'] == 'Mac' and device.data['dr'] == "https://tmx.zacharysproducts.com/static" \
-                                                                     "/test/index.html":
+            if device.data['lsa'] == 'c06ab5e4b215443f863de014754145c0':
                 return device
 
     def solve(
@@ -83,7 +82,7 @@ class Site:
 
         cookie_jar = CookieJar()
 
-        if not predefined_script:
+        if predefined_script is False:
             script = self.get_config_script()
 
             profiling_url = self.get_tmx_profiling_url(script, session_id)
@@ -95,13 +94,13 @@ class Site:
         profiling = Profiling(self.reveal_strings(profiling_script), device, session_id, cookie_jar=cookie_jar,
                               headers=self.headers, proxy=proxy)
 
-        if not predefined_script:
+        if predefined_script is False:
             main_script = profiling.solve()
         else:
             profiling.solve()
 
         main_script_revealed = self.reveal_strings(main_script)
-        lsb, lsa = re.findall(r'([A-Fa-f0-9]{32})_', main_script_revealed)
+        lsa, lsb = re.findall(r'([A-Fa-f0-9]{32})_', main_script_revealed)
 
         #: TODO: validate; may be in wrong order, or dynamic
         device.data['lsb'] = lsb
@@ -167,7 +166,7 @@ class Site:
 
             response = stub.Transform(services_pb2.TransformationMessage(
                 script=script,
-                fast=True,
+                transformation_type="tagging"
             ))
 
             if response.error:

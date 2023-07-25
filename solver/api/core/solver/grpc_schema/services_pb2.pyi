@@ -14,14 +14,14 @@ PROFILING: ScriptType
 MAIN: ScriptType
 
 class TransformationMessage(_message.Message):
-    __slots__ = ["script", "fast", "error"]
+    __slots__ = ["script", "transformation_type", "error"]
     SCRIPT_FIELD_NUMBER: _ClassVar[int]
-    FAST_FIELD_NUMBER: _ClassVar[int]
+    TRANSFORMATION_TYPE_FIELD_NUMBER: _ClassVar[int]
     ERROR_FIELD_NUMBER: _ClassVar[int]
     script: str
-    fast: bool
+    transformation_type: str
     error: str
-    def __init__(self, script: _Optional[str] = ..., fast: bool = ..., error: _Optional[str] = ...) -> None: ...
+    def __init__(self, script: _Optional[str] = ..., transformation_type: _Optional[str] = ..., error: _Optional[str] = ...) -> None: ...
 
 class CreateURLVMMessage(_message.Message):
     __slots__ = ["script", "hostname", "params"]
