@@ -12,6 +12,7 @@ from dataclasses import field
 from argparse import ArgumentParser
 from urllib.parse import parse_qsl
 from seleniumwire.utils import decode as selenium_decode
+import pytest
 
 
 def decrypt(encrypted_string, session_id):
@@ -160,21 +161,19 @@ def transform_requests(browser_requests: list[TMXRequest], solver_requests: list
     return requests
 
 
-def main():
-    parser = ArgumentParser(description='Comparison CLI for ThreatMatrix solver.')
-    parser.add_argument('domain', help='Domain to be tested with.')
-    parser.add_argument('url', help='URL where you want to solve TMX.')
+@pytest.mark.parametrize("domain,url", [
+    ("homedepot.com", "https://www.homedepot.com/auth/view/signin?redirect=/login&ref=null")
+])
+def test_requests_comparison(domain, url):
+    site = site_list[domain]
 
-    args = parser.parse_args()
-    site = site_list[args.domain]
-
-    browser_response = get_browser_network_requests(args.url)
+    browser_response = get_browser_network_requests(url)
     solver_requests = get_solver_network_requests(
         profiling_script=browser_response.profiling_script,
         main_script=browser_response.main_script,
         session_id=browser_response.session_id,
         site=site,
-        url=args.url
+        url=url
     )
 
     requests = transform_requests(
@@ -186,9 +185,8 @@ def main():
         if '.js' in url:
             continue
 
-        #: start testing
+        assert len(requests[url]) == 2  #: the solver and browser are both making requests
+
+        assert len(requests[url]['browser']) == len(requests[url]['solver'])  #: the same amount of requests are being made
 
 
-
-if __name__ == "__main__":
-    main()
