@@ -1,16 +1,15 @@
 import requests
 from ...exceptions import FailedToRetrieveScriptException, FailedToValidateScriptException
 from ...grpc_schema import services_pb2_grpc, services_pb2
-from ...profiling import Profiling
-from ...solver import TMXRequest
-from ...main_script import MainScript
-from ...device import Device, get_devices
+from solver.api.core.solver.solvers.profiling import Profiling
+from solver.api.core.solver.solvers.solver import TMXRequest
+from solver.api.core.solver.solvers.main_script import MainScript
+from ...device import Device
 from ....config import GRPC_HOSTNAME
 import grpc
 import hashlib
 import re
 import httpx
-import asyncio
 from http.cookiejar import CookieJar
 
 
@@ -67,6 +66,7 @@ class Site:
             predefined_script: bool = False,
             profiling_script: str = None,
             main_script: str = None,
+            iframes: dict[str, str] = None,
     ) -> tuple[bool, list[TMXRequest]]:
         if url is None:
             url = f'https://www.{self.site_domain}/'
@@ -107,7 +107,7 @@ class Site:
         device.data['lsa'] = lsa
 
         main = MainScript(main_script_revealed, device, session_id, org_id=self.org_id, cookie_jar=cookie_jar,
-                          headers=self.headers, proxy=proxy)
+                          headers=self.headers, proxy=proxy, reveal_strings=self.reveal_strings, predefined_iframes=iframes)
         main.solve()
 
         solver_analytic_requests = []

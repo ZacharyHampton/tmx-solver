@@ -10,8 +10,10 @@ class ScriptType(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     __slots__ = []
     PROFILING: _ClassVar[ScriptType]
     MAIN: _ClassVar[ScriptType]
+    IFRAME: _ClassVar[ScriptType]
 PROFILING: ScriptType
 MAIN: ScriptType
+IFRAME: ScriptType
 
 class TransformationMessage(_message.Message):
     __slots__ = ["script", "transformation_type", "error"]

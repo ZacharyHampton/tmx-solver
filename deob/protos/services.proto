@@ -25,6 +25,7 @@ service TransformationService {
 enum ScriptType {
     PROFILING = 0;
     MAIN = 1;
+    IFRAME = 2;
   }
 
 message LinkURLsMessage {

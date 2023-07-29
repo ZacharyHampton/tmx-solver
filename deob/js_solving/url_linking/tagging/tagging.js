@@ -1,10 +1,12 @@
 const {default: generate} = require("@babel/generator");
 const { profiling_tagging } = require("./profiling");
 const { main_tagging } = require("./main");
+const { iframe_tagging } = require("./iframe");
 
 const tagging_function = {
     "PROFILING": profiling_tagging,
-    "MAIN": main_tagging
+    "MAIN": main_tagging,
+    "IFRAME": iframe_tagging
 }
 
 function recursive_til_parent_body(path) {

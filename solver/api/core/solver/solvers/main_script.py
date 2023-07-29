@@ -1,12 +1,15 @@
-from .device import Device
+from solver.api.core.solver.device import Device
 import httpx
 from httpx import AsyncClient
 import asyncio
 from .solver import Solver, TMXPayload
-from .encrypt import encrypt
-from .payload import Payload
+from .iframe import IFrame
+from solver.api.core.solver.encrypt import encrypt
+from solver.api.core.solver.payload import Payload
 from urllib.parse import quote
 from http.cookiejar import CookieJar
+from bs4 import BeautifulSoup
+from typing import Callable
 
 
 class MainScript(Solver):
@@ -18,13 +21,17 @@ class MainScript(Solver):
             org_id: str,
             cookie_jar: CookieJar,
             headers: dict,
+            reveal_strings: Callable,
             proxy: str | None = None,
+            predefined_iframes: dict[str, str] = None,
     ):
         super().__init__(script, device, session_id, "MAIN", cookie_jar)
 
         self.org_id = org_id
         self.headers = headers
         self.proxy = proxy
+        self.reveal_strings = reveal_strings
+        self.predefined_iframes = predefined_iframes
 
         #: process of main script
         #: fp png image
@@ -106,7 +113,6 @@ class MainScript(Solver):
         asyncio.run(self.request_to_online_matrix_image())
         medh = asyncio.run(self.send_medh_payload())
         fp = asyncio.run(self.send_fp_payload())
-        lsb = asyncio.run(self.send_lsb_payload())
         jwk = asyncio.run(self.send_jwk_payload())
         ip = asyncio.run(self.send_ip_payload())
         rev = asyncio.run(self.send_rev_payload())
@@ -141,7 +147,7 @@ class MainScript(Solver):
             je = encrypt(decoded_payload := "wei={}".format(quote(ip)), self.session_id)
 
             response = await client.get(
-                self.tags['jwk_payload'] + '&jac=1&je={}'.format(je),
+                self.tags['main_url_payload'] + '&jac=1&je={}'.format(je),
             )
 
             self.add_request(response,
@@ -160,13 +166,15 @@ class MainScript(Solver):
 
             return response.status_code == 204
 
-    async def send_jwk_payload(self):
+    async def send_jwk_payload(self, url: str = None):
         jf = encrypt(decoded_payload := (self.jwk_payload.get_query_string(self.device, include_ampersand=True)[1:]),
                      self.session_id)
 
         async with httpx.AsyncClient(headers=self.headers, proxies=self.proxy, cookies=self.cookie_jar) as client:
+            url = url or self.tags['jwk_payload']
+
             response = await client.get(
-                self.tags['jwk_payload'] + '&jf={}'.format(jf),
+                url + '&jf={}'.format(jf),
             )
 
             self.add_request(response,
@@ -181,13 +189,13 @@ class MainScript(Solver):
 
             return response.status_code == 204
 
-    async def send_lsb_payload(self):
+    async def send_lsb_payload(self, url: str):
         jf = encrypt(decoded_payload := self.lsb_payload.get_query_string(self.device, include_ampersand=False),
                      self.session_id)
 
         async with httpx.AsyncClient(headers=self.headers, proxies=self.proxy, cookies=self.cookie_jar) as client:
             response = await client.get(
-                self.tags['lsa_payload'] + '&jf={}'.format(jf),
+                url + '&jf={}'.format(jf),
             )
 
             self.add_request(response,
@@ -286,7 +294,7 @@ class MainScript(Solver):
 
         async with httpx.AsyncClient(headers=self.headers, proxies=self.proxy, cookies=self.cookie_jar) as client:
             response = await client.get(
-                self.tags['lsa_payload'] + '&jb={}'.format(jb),
+                self.tags['main_url_payload'] + '&jb={}'.format(jb),
             )
 
             self.add_request(response,
@@ -316,13 +324,33 @@ class MainScript(Solver):
             self.add_request(response)
 
     async def request_to_iframes(self):
-        urls = self.tags["online_metrix_iframe"]
+        urls = list(self.tags["online_metrix_iframe"])
 
-        async with httpx.AsyncClient(headers=self.headers, proxies=self.proxy, cookies=self.cookie_jar) as client:
-            results = await asyncio.gather(*[client.get(url) for url in urls])
+        for url in urls:
+            async with httpx.AsyncClient(headers=self.headers, proxies=self.proxy, cookies=self.cookie_jar) as client:
+                response = await client.get(url)
+                self.add_request(response)
 
-            for result in results:
-                self.add_request(result)
+            if self.predefined_iframes and url in self.predefined_iframes:
+                html = self.predefined_iframes[url]
+            else:
+                html = response.text
+
+            iframe = IFrame(
+                script=self.reveal_strings(BeautifulSoup(html, 'html.parser').find('script').text),
+                device=self.device,
+                session_id=self.session_id,
+                cookie_jar=self.cookie_jar,
+                headers=self.headers,
+                proxy=self.proxy,
+            )
+
+            if iframe.tags.get('lsa_payload'):
+                await self.send_lsb_payload(url=iframe.tags['lsa_payload'])
+            elif iframe.tags.get('jwk_payload'):
+                await self.send_jwk_payload(url=iframe.tags['jwk_payload'])
+
+            print(url)
 
     async def request_to_online_matrix_image(self):
         async with httpx.AsyncClient(headers=self.headers, proxies=self.proxy, cookies=self.cookie_jar) as client:

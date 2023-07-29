@@ -1,15 +1,13 @@
 import re
 import time
 
-from seleniumwire.inspect import TimeoutException
 import seleniumwire.undetected_chromedriver as uc
 from solver.api.core.solver.sites import site_list
 from solver.api.core.solver.sites.parsers import Site
-from solver.api.core.solver.solver import TMXRequest, TMXPayload
-from solver.api.core.solver.device import Device, get_devices
+from solver.api.core.solver.solvers.solver import TMXRequest, TMXPayload
+from solver.api.core.solver.device import get_devices
 from pydantic import BaseModel
 from dataclasses import field
-from argparse import ArgumentParser
 from urllib.parse import parse_qsl
 from seleniumwire.utils import decode as selenium_decode
 import pytest
@@ -33,6 +31,7 @@ def decrypt(encrypted_string, session_id):
 class BrowserResponse(BaseModel):
     profiling_script: str = None
     main_script: str = None
+    iframes: dict[str, str]
     session_id: str = None
     requests: list[TMXRequest] = field(default_factory=list)
 
@@ -43,7 +42,7 @@ def get_browser_network_requests(url: str) -> BrowserResponse:
 
     driver = uc.Chrome(headless=True, use_subprocess=False, options=chrome_options)
 
-    browser_response = BrowserResponse(requests=[])
+    browser_response = BrowserResponse(requests=[], iframes={})
     tmx_regex = r".*\?[a-z0-9_]{16}=.*"
     found_main_script = False
 
@@ -90,6 +89,14 @@ def get_browser_network_requests(url: str) -> BrowserResponse:
                     response.headers.get('Content-Encoding', 'identity')
                 ).decode('utf-8')
                 found_main_script = True
+            elif (
+                    '<script type="text/javascript">' in
+                    (iframe_script := selenium_decode(
+                        response.body,
+                        response.headers.get('Content-Encoding', 'identity')
+                    ).decode('utf-8'))
+            ):
+                browser_response.iframes[request.url] = iframe_script
 
             browser_response.requests += [bundle_request()]
 
@@ -115,9 +122,10 @@ def get_browser_network_requests(url: str) -> BrowserResponse:
 def get_solver_network_requests(
         profiling_script: str,
         main_script: str,
+        iframes: dict[str, str],
         session_id: str,
         site: Site,
-        url: str
+        url: str,
 ) -> list[TMXRequest]:
     working_device = site.get_testing_device(get_devices())
 
@@ -127,7 +135,8 @@ def get_solver_network_requests(
         url=url,
         predefined_script=True,
         profiling_script=profiling_script,
-        main_script=main_script
+        main_script=main_script,
+        iframes=iframes
     )
 
     return requests
@@ -171,10 +180,15 @@ def test_requests_comparison(domain, url):
     solver_requests = get_solver_network_requests(
         profiling_script=browser_response.profiling_script,
         main_script=browser_response.main_script,
+        iframes=browser_response.iframes,
         session_id=browser_response.session_id,
         site=site,
         url=url
     )
+
+    #: for debugging
+    revealed_profiling_script = site.reveal_strings(browser_response.profiling_script)
+    revealed_main_script = site.reveal_strings(browser_response.main_script)
 
     requests = transform_requests(
         browser_requests=browser_response.requests,
@@ -187,6 +201,5 @@ def test_requests_comparison(domain, url):
 
         assert len(requests[url]) == 2  #: the solver and browser are both making requests
 
-        assert len(requests[url]['browser']) == len(requests[url]['solver'])  #: the same amount of requests are being made
-
-
+        assert len(requests[url]['browser']) == len(
+            requests[url]['solver'])  #: the same amount of requests are being made

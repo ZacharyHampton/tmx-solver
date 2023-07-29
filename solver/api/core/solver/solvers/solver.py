@@ -1,8 +1,8 @@
-from .grpc_schema import services_pb2_grpc, services_pb2
+from solver.api.core.solver.grpc_schema import services_pb2_grpc, services_pb2
 import grpc
-from .exceptions import FailedToValidateScriptException
-from .device import Device
-from ..config import GRPC_HOSTNAME
+from solver.api.core.solver.exceptions import FailedToValidateScriptException
+from solver.api.core.solver.device import Device
+from solver.api.core.config import GRPC_HOSTNAME
 from typing import NewType
 from httpx import Response
 from http.cookiejar import CookieJar

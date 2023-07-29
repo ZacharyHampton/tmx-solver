@@ -13,7 +13,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0eservices.proto\"\x7f\n\x15TransformationMessage\x12\x0e\n\x06script\x18\x01 \x01(\t\x12 \n\x13transformation_type\x18\x02 \x01(\tH\x00\x88\x01\x01\x12\x12\n\x05\x65rror\x18\x03 \x01(\tH\x01\x88\x01\x01\x42\x16\n\x14_transformation_typeB\x08\n\x06_error\"F\n\x12\x43reateURLVMMessage\x12\x0e\n\x06script\x18\x01 \x01(\t\x12\x10\n\x08hostname\x18\x02 \x01(\t\x12\x0e\n\x06params\x18\x03 \x03(\t\"@\n\x13\x43reateURLVMResponse\x12\x0b\n\x03url\x18\x01 \x01(\t\x12\x12\n\x05\x65rror\x18\x02 \x01(\tH\x00\x88\x01\x01\x42\x08\n\x06_error\"C\n\x0fLinkURLsMessage\x12\x0e\n\x06script\x18\x01 \x01(\t\x12 \n\x0bscript_type\x18\x02 \x01(\x0e\x32\x0b.ScriptType\"\x1a\n\nListOfURLs\x12\x0c\n\x04urls\x18\x01 \x03(\t\"\xb7\x01\n\x10LinkURLsResponse\x12)\n\x04urls\x18\x01 \x03(\x0b\x32\x1b.LinkURLsResponse.UrlsEntry\x12 \n\x0bscript_type\x18\x02 \x01(\x0e\x32\x0b.ScriptType\x12\x12\n\x05\x65rror\x18\x03 \x01(\tH\x00\x88\x01\x01\x1a\x38\n\tUrlsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x1a\n\x05value\x18\x02 \x01(\x0b\x32\x0b.ListOfURLs:\x02\x38\x01\x42\x08\n\x06_error*%\n\nScriptType\x12\r\n\tPROFILING\x10\x00\x12\x08\n\x04MAIN\x10\x01\x32\x8e\x01\n\x15TransformationService\x12;\n\tTransform\x12\x16.TransformationMessage\x1a\x16.TransformationMessage\x12\x38\n\x0b\x43reateURLVM\x12\x13.CreateURLVMMessage\x1a\x14.CreateURLVMResponse2A\n\x0eLinkingService\x12/\n\x08LinkURLs\x12\x10.LinkURLsMessage\x1a\x11.LinkURLsResponseb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0eservices.proto\"\x7f\n\x15TransformationMessage\x12\x0e\n\x06script\x18\x01 \x01(\t\x12 \n\x13transformation_type\x18\x02 \x01(\tH\x00\x88\x01\x01\x12\x12\n\x05\x65rror\x18\x03 \x01(\tH\x01\x88\x01\x01\x42\x16\n\x14_transformation_typeB\x08\n\x06_error\"F\n\x12\x43reateURLVMMessage\x12\x0e\n\x06script\x18\x01 \x01(\t\x12\x10\n\x08hostname\x18\x02 \x01(\t\x12\x0e\n\x06params\x18\x03 \x03(\t\"@\n\x13\x43reateURLVMResponse\x12\x0b\n\x03url\x18\x01 \x01(\t\x12\x12\n\x05\x65rror\x18\x02 \x01(\tH\x00\x88\x01\x01\x42\x08\n\x06_error\"C\n\x0fLinkURLsMessage\x12\x0e\n\x06script\x18\x01 \x01(\t\x12 \n\x0bscript_type\x18\x02 \x01(\x0e\x32\x0b.ScriptType\"\x1a\n\nListOfURLs\x12\x0c\n\x04urls\x18\x01 \x03(\t\"\xb7\x01\n\x10LinkURLsResponse\x12)\n\x04urls\x18\x01 \x03(\x0b\x32\x1b.LinkURLsResponse.UrlsEntry\x12 \n\x0bscript_type\x18\x02 \x01(\x0e\x32\x0b.ScriptType\x12\x12\n\x05\x65rror\x18\x03 \x01(\tH\x00\x88\x01\x01\x1a\x38\n\tUrlsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x1a\n\x05value\x18\x02 \x01(\x0b\x32\x0b.ListOfURLs:\x02\x38\x01\x42\x08\n\x06_error*1\n\nScriptType\x12\r\n\tPROFILING\x10\x00\x12\x08\n\x04MAIN\x10\x01\x12\n\n\x06IFRAME\x10\x02\x32\x8e\x01\n\x15TransformationService\x12;\n\tTransform\x12\x16.TransformationMessage\x1a\x16.TransformationMessage\x12\x38\n\x0b\x43reateURLVM\x12\x13.CreateURLVMMessage\x1a\x14.CreateURLVMResponse2A\n\x0eLinkingService\x12/\n\x08LinkURLs\x12\x10.LinkURLsMessage\x1a\x11.LinkURLsResponseb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -24,7 +24,7 @@ if _descriptor._USE_C_DESCRIPTORS == False:
   _LINKURLSRESPONSE_URLSENTRY._options = None
   _LINKURLSRESPONSE_URLSENTRY._serialized_options = b'8\001'
   _globals['_SCRIPTTYPE']._serialized_start=568
-  _globals['_SCRIPTTYPE']._serialized_end=605
+  _globals['_SCRIPTTYPE']._serialized_end=617
   _globals['_TRANSFORMATIONMESSAGE']._serialized_start=18
   _globals['_TRANSFORMATIONMESSAGE']._serialized_end=145
   _globals['_CREATEURLVMMESSAGE']._serialized_start=147
@@ -39,8 +39,8 @@ if _descriptor._USE_C_DESCRIPTORS == False:
   _globals['_LINKURLSRESPONSE']._serialized_end=566
   _globals['_LINKURLSRESPONSE_URLSENTRY']._serialized_start=500
   _globals['_LINKURLSRESPONSE_URLSENTRY']._serialized_end=556
-  _globals['_TRANSFORMATIONSERVICE']._serialized_start=608
-  _globals['_TRANSFORMATIONSERVICE']._serialized_end=750
-  _globals['_LINKINGSERVICE']._serialized_start=752
-  _globals['_LINKINGSERVICE']._serialized_end=817
+  _globals['_TRANSFORMATIONSERVICE']._serialized_start=620
+  _globals['_TRANSFORMATIONSERVICE']._serialized_end=762
+  _globals['_LINKINGSERVICE']._serialized_start=764
+  _globals['_LINKINGSERVICE']._serialized_end=829
 # @@protoc_insertion_point(module_scope)

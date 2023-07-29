@@ -1,9 +1,9 @@
-from .device import Device
+from solver.api.core.solver.device import Device
 import httpx
 import asyncio
 from .solver import Solver, TMXPayload
-from .encrypt import encrypt
-from .payload import Payload
+from solver.api.core.solver.encrypt import encrypt
+from solver.api.core.solver.payload import Payload
 from httpx import AsyncClient
 from http.cookiejar import CookieJar
 
