@@ -72,33 +72,35 @@ def get_browser_network_requests(url: str) -> BrowserResponse:
 
         #: ifs for getting main or profiling script & fetching session_id
         if "/fp/clear.png" in request.url or re.match(tmx_regex, request.url):
-            if ".js" in request.path:  #: profiling script
-                query_string = parse_qsl(request.querystring)
-                browser_response.session_id = query_string[1][1]
-                browser_response.profiling_script = selenium_decode(
-                    response.body,
-                    response.headers.get('Content-Encoding', 'identity')
-                ).decode('utf-8')
-            elif (
-                    response.headers.get('Content-Type') == "text/javascript;charset=UTF-8" and
-                    not found_main_script and
-                    response.status_code == 200
-            ):  #: main script
-                browser_response.main_script = selenium_decode(
-                    response.body,
-                    response.headers.get('Content-Encoding', 'identity')
-                ).decode('utf-8')
-                found_main_script = True
-            elif (
-                    '<script type="text/javascript">' in
-                    (iframe_script := selenium_decode(
+            if response.body:
+                if ".js" in request.path:  #: profiling script
+                    query_string = parse_qsl(request.querystring)
+                    browser_response.session_id = query_string[1][1]
+                    browser_response.profiling_script = selenium_decode(
                         response.body,
                         response.headers.get('Content-Encoding', 'identity')
-                    ).decode('utf-8'))
-            ):
-                browser_response.iframes[request.url] = iframe_script
+                    ).decode('utf-8')
+                elif (
+                        response.headers.get('Content-Type') == "text/javascript;charset=UTF-8" and
+                        not found_main_script and
+                        response.status_code == 200
+                ):  #: main script
+                    browser_response.main_script = selenium_decode(
+                        response.body,
+                        response.headers.get('Content-Encoding', 'identity')
+                    ).decode('utf-8')
+                    found_main_script = True
+                elif (
+                        '<script type="text/javascript">' in
+                        (iframe_script := selenium_decode(
+                            response.body,
+                            response.headers.get('Content-Encoding', 'identity')
+                        ).decode('utf-8', errors='ignore'))  #: be careful, does not raise exception on decode error
+                ):  #: requests
+                    browser_response.iframes[request.url] = iframe_script
 
-            browser_response.requests += [bundle_request()]
+            bundled_request = bundle_request()
+            browser_response.requests.append(bundled_request)
 
     driver.response_interceptor = interceptor
     driver.scopes = [

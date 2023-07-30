@@ -350,8 +350,6 @@ class MainScript(Solver):
             elif iframe.tags.get('jwk_payload'):
                 await self.send_jwk_payload(url=iframe.tags['jwk_payload'])
 
-            print(url)
-
     async def request_to_online_matrix_image(self):
         async with httpx.AsyncClient(headers=self.headers, proxies=self.proxy, cookies=self.cookie_jar) as client:
             response = await client.get(self.tags["embedded_img_online_metrix"])
