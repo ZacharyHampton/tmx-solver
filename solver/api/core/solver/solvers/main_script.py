@@ -10,6 +10,7 @@ from urllib.parse import quote
 from http.cookiejar import CookieJar
 from bs4 import BeautifulSoup
 from typing import Callable
+import re
 
 
 class MainScript(Solver):
@@ -346,6 +347,10 @@ class MainScript(Solver):
             )
 
             if iframe.tags.get('lsa_payload'):
+                lsb = re.findall(r'([A-Fa-f0-9]{32})_', iframe.script)[0]
+
+                self.device.data['lsb'] = lsb
+
                 await self.send_lsb_payload(url=iframe.tags['lsa_payload'])
             elif iframe.tags.get('jwk_payload'):
                 await self.send_jwk_payload(url=iframe.tags['jwk_payload'])

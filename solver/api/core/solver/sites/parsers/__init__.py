@@ -100,10 +100,8 @@ class Site:
             profiling.solve()
 
         main_script_revealed = self.reveal_strings(main_script)
-        lsa, lsb = re.findall(r'([A-Fa-f0-9]{32})_', main_script_revealed)
+        _, lsa = re.findall(r'([A-Fa-f0-9]{32})_', main_script_revealed)
 
-        #: TODO: validate; may be in wrong order, or dynamic
-        device.data['lsb'] = lsb
         device.data['lsa'] = lsa
 
         main = MainScript(main_script_revealed, device, session_id, org_id=self.org_id, cookie_jar=cookie_jar,
