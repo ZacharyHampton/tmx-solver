@@ -1,4 +1,5 @@
 import random
+import time
 
 from . import Site
 import esprima
@@ -80,7 +81,7 @@ class HomeDepot(Site):
         chrome_options = uc.ChromeOptions()
         chrome_options.add_argument("--auto-open-devtools-for-tabs")
 
-        driver = uc.Chrome(headless=True, use_subprocess=False, options=chrome_options)
+        driver = uc.Chrome(headless=False, use_subprocess=False, options=chrome_options)
 
         def interceptor(request):
             if (
@@ -102,6 +103,8 @@ class HomeDepot(Site):
         WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.CLASS_NAME, 'bttn__content'))
         )
+
+        time.sleep(15)
 
         email_field = driver.find_element(value='username')
         email_field.send_keys('a@gmail.com')
